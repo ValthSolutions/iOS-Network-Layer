@@ -19,10 +19,11 @@ public final class CheckDataSource {
     }
 
     func checkList() -> AnyPublisher<CheckListDTO, DataTransferError> {
-      let endpoint = Endpoint<CheckListDTO>(
-        path: "3/genre/movie/list",
-        method: .get
-      )
+        let endpoint = Endpoint<CheckListDTO>(
+            path: "https://api.themoviedb.org/3/genre/movie/list",
+            method: .get, queryParameters:
+                [ "language": "en",
+                  "api_key": "a5ac3411803536cfb4b1cd90557dc8a7"])
       return dataTransferService.request(endpoint)
     }
 }

@@ -11,23 +11,28 @@ import NetworkInterface
 import UIKit
 
 public class DIStorage {
-    var config = ApiDataNetworkConfig(baseURL: URL(string: "https://google.com/")!)
+    
+    public static let shared = DIStorage()
     
     var session = AFSessionManager()
     
     public init() {}
     
     lazy var networkService: AFNetworkServiceCombine = {
-        return AFNetworkServiceCombine(config: config, session: session)
+        return AFNetworkServiceCombine(session: session)
     }()
     
     lazy var service = AFDataTransferServiceCombine(with: networkService)
     
+    deinit {
+        print("DEINIT")
+    }
     
-    public func buildCheck() {
+    public func buildCheck() -> UIViewController{
         let dataSource = CheckDataSource(dataTransferService: service)
         let repo = CheckRepository(remoteDataSource: dataSource)
         let useCase = CheckUseCase(checkRepository: repo)
-        ViewController(useCase: useCase).test(useCase: useCase)
+        var vc = ViewController(useCase: useCase)
+        return vc
     }
 }

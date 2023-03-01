@@ -19,7 +19,6 @@ public protocol DataTransferServiceProtocol {
 }
 
 
-
 public final class AFDataTransferServiceCombine {
     
     private let networkService: AFNetworkServiceCombine
@@ -36,23 +35,24 @@ public final class AFDataTransferServiceCombine {
             let result: T = try decoder.decode(data)
             return result
         } catch {
+            print(error)
             throw DataTransferError.parsing(error)
         }
     }
-    
+
     public func request<T, E>(_ endpoint: E) -> AnyPublisher<T, DataTransferError> where T: Decodable, T == E.Response, E: ResponseRequestable {
-        
         return networkService.request(endpoint: endpoint)
             .tryMap { data -> T in
                 let result: T = try self.decode(data: data, decoder: endpoint.responseDecoder)
                 return result
             }
             .mapError { error -> DataTransferError in
-//                self.logger.log(error: error)
+                print(error)
                 return DataTransferError.noResponse
             }
             .eraseToAnyPublisher()
     }
+}
 //    
 //    public func download(_ url: URL) -> AnyPublisher<Data, Error> {
 //        return networkService.download(url)
@@ -76,4 +76,7 @@ public final class AFDataTransferServiceCombine {
 //            }
 //            .eraseToAnyPublisher()
 //    }
+
+extension AFDataTransferServiceCombine {
+
 }

@@ -23,9 +23,14 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        view.backgroundColor = .red
+
     }
 
+    deinit {
+        print("ViewController - DEINIT")
+    }
+    
     func test(useCase: CheckUseCase) {
         useCase.execute().receive(on: DispatchQueue.main).sink(receiveCompletion: { completion in
             switch completion {
@@ -35,7 +40,7 @@ class ViewController: UIViewController {
                 break
             }
         },
-        receiveValue: { [weak self] checks in
+        receiveValue: { checks in
             print(checks)
         })
         .store(in: &bag)
