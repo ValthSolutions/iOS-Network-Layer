@@ -6,10 +6,10 @@
 //
 
 import Foundation
+import Alamofire
 
-public protocol Requestable {
+public protocol Requestable: URLRequestConvertible {
   var path: String { get }
-  var isFullPath: Bool { get }
   var method: HTTPMethodType { get }
   var headerParameters: [String: String] { get }
   var queryParametersEncodable: Encodable? { get }
