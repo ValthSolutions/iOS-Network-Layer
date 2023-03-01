@@ -2,10 +2,10 @@ import Combine
 import NetworkInterface
 import Network
 
-final class CheckRepository {
+public final class CheckRepository {
   private let remoteDataSource: CheckDataSource
 
-  init(remoteDataSource: CheckDataSource) {
+    public init(remoteDataSource: CheckDataSource) {
     self.remoteDataSource = remoteDataSource
   }
 }

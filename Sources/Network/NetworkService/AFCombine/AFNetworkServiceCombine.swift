@@ -35,8 +35,6 @@ open class AFNetworkServiceCombine {
                 .request(urlRequest)
                 .publishData()
                 .tryMap { response -> Data in
-                    print(response.description)
-                    print(response.value)
                     guard let data = response.data else {
                         throw AFError.responseSerializationFailed(reason: .inputDataNilOrZeroLength)
                     }

@@ -8,15 +8,15 @@
 import Combine
 import NetworkInterface
 
-final class CheckUseCase {
-
-  private let checkRepository: CheckRepository
-
-  init(checkRepository: CheckRepository) {
-    self.checkRepository = checkRepository
-  }
-
-  func execute() -> AnyPublisher<CheckListDTO, DataTransferError> {
-    return checkRepository.checkList()
-  }
+public final class CheckUseCase {
+    
+    private let checkRepository: CheckRepository
+    
+    public init(checkRepository: CheckRepository) {
+        self.checkRepository = checkRepository
+    }
+    
+    public func execute() -> AnyPublisher<CheckListDTO, DataTransferError> {
+        return checkRepository.checkList()
+    }
 }

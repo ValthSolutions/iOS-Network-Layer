@@ -14,7 +14,7 @@ public final class CheckDataSource {
     
     private let dataTransferService: AFDataTransferServiceCombine
     
-    init(dataTransferService: AFDataTransferServiceCombine) {
+    public init(dataTransferService: AFDataTransferServiceCombine) {
         self.dataTransferService = dataTransferService
     }
 
