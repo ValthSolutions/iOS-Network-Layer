@@ -9,7 +9,6 @@ import Foundation
 import NetworkInterface
 import Combine
 
-
 extension AFNetworkService: RemoteStorePublisher {
     public typealias StringPublisher = AnyPublisher<String, Error>
     public typealias DataPublisher = AnyPublisher<Data, Error>
