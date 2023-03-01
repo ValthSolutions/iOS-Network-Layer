@@ -9,15 +9,15 @@ import Foundation
 import Alamofire
 
 public protocol Requestable {
-  var path: String { get }
+    var path: String { get }
     var isFullPath: Bool { get }
-  var method: HTTPMethodType { get }
-  var headerParameters: [String: String] { get }
-  var queryParametersEncodable: Encodable? { get }
-  var queryParameters: [String: Any] { get }
-  var bodyParametersEncodable: Encodable? { get }
-  var bodyParameters: [String: Any] { get }
-  var bodyEncoding: BodyEncoding { get }
+    var method: HTTPMethodType { get }
+    var headerParameters: [String: String] { get }
+    var queryParametersEncodable: Encodable? { get }
+    var queryParameters: [String: Any] { get }
+    var bodyParametersEncodable: Encodable? { get }
+    var bodyParameters: [String: Any] { get }
+    var bodyEncoding: BodyEncoding { get }
 }
 
 public enum HTTPMethodType: String {
@@ -33,20 +33,24 @@ public enum HTTPMethodType: String {
 }
 
 public enum BodyEncoding {
-  case jsonSerializationData
-  case stringEncodingAscii
+    case jsonSerializationData
+    case stringEncodingAscii
 }
 
 public protocol ResponseRequestable: Requestable {
-  associatedtype Response
-
-  var responseDecoder: ResponseDecoder { get }
+    associatedtype Response
+    
+    var responseDecoder: ResponseDecoder { get }
 }
 
 public protocol ResponseDecoder {
     func decode<T: Decodable>(_ data: Data) throws -> T
 }
 
+public protocol DataEncoder {
+    func encode<T: Encodable>(_ data: T) throws -> Data
+}
+
 public enum RequestGenerationError: Error {
-  case components
+    case components
 }

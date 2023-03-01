@@ -26,6 +26,18 @@ public final class CheckDataSource {
                   "api_key": "a5ac3411803536cfb4b1cd90557dc8a7"])
       return dataTransferService.request(endpoint)
     }
+    func checkDownload() -> AnyPublisher<CheckListDTO, DataTransferError> {
+        let endpoint = Endpoint<CheckListDTO>(
+            path: "https://api.themoviedb.org/3/genre/movie/list",
+            method: .get, queryParameters:
+                [ "language": "en",
+                  "api_key": "a5ac3411803536cfb4b1cd90557dc8a7"])
+      return dataTransferService.download(endpoint)
+    }
+    func checkUpload() -> AnyPublisher<String, DataTransferError> {
+
+        return dataTransferService.upload(<#T##value: Encodable##Encodable#>, to: <#T##URL#>)
+    }
 }
 
 

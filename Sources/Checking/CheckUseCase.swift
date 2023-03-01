@@ -16,7 +16,11 @@ public final class CheckUseCase {
         self.checkRepository = checkRepository
     }
     
-    public func execute() -> AnyPublisher<CheckListDTO, DataTransferError> {
+    public func executeRequest() -> AnyPublisher<CheckListDTO, DataTransferError> {
         return checkRepository.checkList()
     }
+    public func executeDownload() -> AnyPublisher<CheckListDTO, DataTransferError> {
+        return checkRepository.checkDownload()
+    }
+    
 }

@@ -31,18 +31,4 @@ class ViewController: UIViewController {
         print("ViewController - DEINIT")
     }
     
-    func test(useCase: CheckUseCase) {
-        useCase.execute().receive(on: DispatchQueue.main).sink(receiveCompletion: { completion in
-            switch completion {
-            case let .failure(error):
-                print(error)
-            case .finished:
-                break
-            }
-        },
-        receiveValue: { checks in
-            print(checks)
-        })
-        .store(in: &bag)
-    }
 }

@@ -19,4 +19,20 @@ extension CheckRepository {
       }
       .eraseToAnyPublisher()
   }
+    
+    func checkDownload() -> AnyPublisher<CheckListDTO, DataTransferError> {
+        return remoteDataSource.checkDownload()
+        .map { list in
+            return list
+        }
+        .eraseToAnyPublisher()
+    }
+    func checkUpload() -> AnyPublisher<CheckListDTO, DataTransferError> {
+        return remoteDataSource.checkDownload()
+        .map { list in
+            return list
+        }
+        .eraseToAnyPublisher()
+    }
+    
 }
