@@ -47,13 +47,12 @@ public class Endpoint<R>: ResponseRequestable {
     }
 
 }
-extension URLRequest: URLRequestConvertible {
-    public func asURLRequest() throws -> URLRequest { self }
-}
+
 
 extension Requestable {
 
-    func urlRequest(with config: NetworkConfigurable) throws -> URLRequest {
+    
+    func asURLRequest(with config: NetworkConfigurable) throws -> URLRequest {
      let url = try url(with: config)
      var urlRequest = URLRequest(url: url)
      var allHeaders: [String: String] = config.headers

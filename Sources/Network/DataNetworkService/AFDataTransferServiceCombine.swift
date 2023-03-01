@@ -49,31 +49,31 @@ public final class AFDataTransferServiceCombine {
             }
             .mapError { error -> DataTransferError in
 //                self.logger.log(error: error)
-                return DataTransferError.noResponse 
+                return DataTransferError.noResponse
             }
             .eraseToAnyPublisher()
     }
-    
-    public func download(_ url: URL) -> AnyPublisher<Data, Error> {
-        return networkService.download(url)
-            .eraseToAnyPublisher()
-    }
-    
-    public func upload<T: Decodable>(_ data: Data, to url: URL, decoder: ResponseDecoder) -> AnyPublisher<T, Error> {
-        return networkService.upload(data, to: url)
-            .tryMap { [weak self] data -> T in
-                guard let self = self else { throw DataTransferError.noResponse }
-                return try self.decode(data: data, decoder: decoder)
-            }
-            .eraseToAnyPublisher()
-    }
-    
-    public func upload<T: Decodable>(multipartFormData: @escaping (MultipartFormData) -> Void, to url: URL, decoder: ResponseDecoder) -> AnyPublisher<T, Error> {
-        return networkService.upload(multipartFormData: multipartFormData, to: url)
-            .tryMap { [weak self] data -> T in
-                guard let self = self else { throw DataTransferError.noResponse }
-                return try self.decode(data: data, decoder: decoder)
-            }
-            .eraseToAnyPublisher()
-    }
+//    
+//    public func download(_ url: URL) -> AnyPublisher<Data, Error> {
+//        return networkService.download(url)
+//            .eraseToAnyPublisher()
+//    }
+//    
+//    public func upload<T: Decodable>(_ data: Data, to url: URL, decoder: ResponseDecoder) -> AnyPublisher<T, Error> {
+//        return networkService.upload(data, to: url)
+//            .tryMap { [weak self] data -> T in
+//                guard let self = self else { throw DataTransferError.noResponse }
+//                return try self.decode(data: data, decoder: decoder)
+//            }
+//            .eraseToAnyPublisher()
+//    }
+//    
+//    public func upload<T: Decodable>(multipartFormData: @escaping (MultipartFormData) -> Void, to url: URL, decoder: ResponseDecoder) -> AnyPublisher<T, Error> {
+//        return networkService.upload(multipartFormData: multipartFormData, to: url)
+//            .tryMap { [weak self] data -> T in
+//                guard let self = self else { throw DataTransferError.noResponse }
+//                return try self.decode(data: data, decoder: decoder)
+//            }
+//            .eraseToAnyPublisher()
+//    }
 }
