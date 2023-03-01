@@ -8,8 +8,9 @@
 import Foundation
 import Alamofire
 
-public protocol Requestable: URLRequestConvertible {
+public protocol Requestable {
   var path: String { get }
+    var isFullPath: Bool { get }
   var method: HTTPMethodType { get }
   var headerParameters: [String: String] { get }
   var queryParametersEncodable: Encodable? { get }
@@ -17,8 +18,6 @@ public protocol Requestable: URLRequestConvertible {
   var bodyParametersEncodable: Encodable? { get }
   var bodyParameters: [String: Any] { get }
   var bodyEncoding: BodyEncoding { get }
-
-  func urlRequest(with networkConfig: NetworkConfigurable) throws -> URLRequest
 }
 
 public enum HTTPMethodType: String {
@@ -41,7 +40,11 @@ public enum BodyEncoding {
 public protocol ResponseRequestable: Requestable {
   associatedtype Response
 
-  var responseDecoder: ResponseDecoderProtocol { get }
+  var responseDecoder: ResponseDecoder { get }
+}
+
+public protocol ResponseDecoder {
+    func decode<T: Decodable>(_ data: Data) throws -> T
 }
 
 public enum RequestGenerationError: Error {

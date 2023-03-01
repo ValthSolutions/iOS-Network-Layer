@@ -4,18 +4,13 @@ import NetworkInterface
 import Combine
 
 open class AFNetworkServiceCombine {
-    
-    public typealias Combines = (AFDataResponse<Data>) -> Void
- 
-    public var handler: BaseHandler
+     
     private let config: NetworkConfigurable
     public var session: Session
     
     public init(config: NetworkConfigurable,
-                session: Session,
-                handler: BaseHandler) {
+                session: Session) {
         self.session = session
-        self.handler = handler
         self.config = config
     }
 
@@ -25,7 +20,6 @@ open class AFNetworkServiceCombine {
           return session.request(urlRequest)
               .publishData()
               .tryMap { response -> Data in
-                  self.handler.handle(response)
 
                   guard let data = response.data else {
                       throw AFError.responseSerializationFailed(reason: .inputDataNilOrZeroLength)
@@ -41,18 +35,16 @@ open class AFNetworkServiceCombine {
     
     public func request(_ endpoint: Requestable) -> AnyPublisher<Data, Error> {
         do {
-            let urlRequest = try endpoint.urlRequest(with: config)
             return session
                 .request(endpoint)
                 .publishData()
-                .tryMap { [weak self] response -> Data in
-                    self?.handler.handle(response)
-                    
+                .tryMap { response -> Data in
                     guard let data = response.data else {
                         throw AFError.responseSerializationFailed(reason: .inputDataNilOrZeroLength)
                     }
                     return data
                 }
+            
                 .eraseToAnyPublisher() 
         } catch {
             return Fail(error: error as! AFError).eraseToAnyPublisher()
@@ -76,7 +68,6 @@ open class AFNetworkServiceCombine {
             .upload(data, to: url)
             .publishData()
             .tryMap { response -> Data in
-                self.handler.handle(response)
                 guard let data = response.data else {
                     throw AFError.responseSerializationFailed(reason: .inputDataNilOrZeroLength)
                 }
@@ -90,7 +81,6 @@ open class AFNetworkServiceCombine {
             .upload(multipartFormData: multipartFormData, to: url)
             .publishData()
             .tryMap { response -> Data in
-                self.handler.handle(response)
                 guard let data = response.data else {
                     throw AFError.responseSerializationFailed(reason: .inputDataNilOrZeroLength)
                 }

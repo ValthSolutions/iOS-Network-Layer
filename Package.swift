@@ -31,7 +31,10 @@ let package = Package(
             ]),
         .target(
             name: "NetworkInterface",
-            dependencies: []),
+            dependencies: [
+                .product(name: "Alamofire", package: "Alamofire"),
+
+            ]),
         .target(
             name: "Network",
             dependencies: [

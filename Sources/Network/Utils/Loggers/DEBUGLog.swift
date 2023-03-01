@@ -121,21 +121,6 @@ public struct DEBUGLog: Log {
     }
 }
 
-public struct RELEASELog: Log {
-    
-    public init(){
-    }
-    
-    public func log<T, E>(_ response: DataResponse<T, E>) {
-    }
-    
-    public func success<T>(_ value: T) {
-    }
-    
-    public func failure(_ error: Error) {
-    }
-}
-
 extension Data {
     
     var prettyPrintedJSONString: NSString? {
