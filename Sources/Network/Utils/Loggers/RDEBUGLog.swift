@@ -6,12 +6,14 @@ public protocol RLog {
     func log<T>(_ publisher: DataResponsePublisher<T>)
     func success<T>(_ value: T)
     func failure(_ error: Error)
+    
+    var bag: Set<AnyCancellable> { get set }
 }
 
 public class RDEBUGLog: RLog {
     let separator = " "
     let empty = "----"
-    private var bag = Set<AnyCancellable>()
+    public var bag = Set<AnyCancellable>()
 
     public init() {}
     
@@ -25,6 +27,19 @@ public class RDEBUGLog: RLog {
             }
         }, receiveValue: { [unowned self] value in
             self.success(value)
+                        
+            guard let response = value.response,
+                  let request = value.request else {
+                return
+            }
+
+            self.methodName(request.httpMethod)
+            self.urlPath(request.url?.absoluteString)
+            self.header(request.allHTTPHeaderFields)
+            self.parameters(request.httpBody)
+            self.statusCode(response.statusCode)
+            self.metrics(value.metrics)
+            self.jsonResponse(value.data)
         })
         .store(in: &bag)
     }

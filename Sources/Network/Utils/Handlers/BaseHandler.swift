@@ -1,6 +1,8 @@
 import Alamofire
 import Foundation
 import Combine
+import Alamofire
+
 
 open class BaseHandler {
     
@@ -33,27 +35,32 @@ open class BaseHandler {
     }
 }
 
-import Alamofire
-import Combine
 
 open class CombineHandler {
     
-    private let loger: RLog
+    private var logger: RLog
     
     public init(_ loger: RLog) {
-        self.loger = loger
+        self.logger = loger
     }
     
-    open func handle<T>(_ response: DataResponsePublisher<T>) -> Result<T, Error> {
-        loger.log(response)
-
+    open func handle<T>(_ publisher: DataResponsePublisher<T>, item: T) {
+        logger.log(publisher)
     }
     
-    open func responseSuccess<T>(_ response: DataResponsePublisher<T>, item: T) -> Result<T, Error> {
+    open func responseSuccess<T>(_ publisher: DataResponsePublisher<T>, item: T) -> Result<T, Error> {
         .success(item)
     }
     
-    open func responseError<T>(_ response: DataResponsePublisher<T>, error: Error) -> Result<T, Error> {
+    open func responseError<T>(_ publisher: DataResponsePublisher<T>, error: Error) -> Result<T, Error> {
         .failure(error)
     }
 }
+//p { value -> Result<T, Error> in
+//    self.responseSuccess(publisher, item: item)
+//}
+//.mapError { error -> Result<T, Error> in
+//    self.responseError(publisher, error: error)
+//}
+//.sink(receiveCompletion: { _ in }, receiveValue: { _ in })
+//.store(in: &logger.bag)
