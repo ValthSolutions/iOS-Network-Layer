@@ -2,12 +2,18 @@
 import Alamofire
 import Foundation
 
-public class MainSessionManager: Session {
+public class AFSessionManager: Session {
     
-    public static func `default`(setToken: @escaping (inout [String: String]) -> Void) -> MainSessionManager {
-        let adapter = TokenAdapter(setToken: setToken)
-        let interceptor = Intercector(adapter: adapter)
-        let session = MainSessionManager(configuration: URLSessionConfiguration.default, interceptor: interceptor)
+    public static func `default`(setToken: ((inout [String: String]) -> Void)? = nil) -> AFSessionManager {
+        var interceptor: Intercector?
+        var adapter: TokenAdapter?
+        
+        if let setToken = setToken {
+            adapter = TokenAdapter(setToken: setToken)
+            interceptor = Intercector(adapter: adapter!)
+        }
+        
+        let session = AFSessionManager(configuration: URLSessionConfiguration.default, interceptor: interceptor)
         return session
     }
 }
@@ -27,8 +33,8 @@ public class Intercector: RequestInterceptor {
 public class TokenAdapter: RequestAdapter {
     private let setToken: (inout [String: String]) -> Void
     
-    public init(setToken: @escaping (inout [String: String]) -> Void) {
-        self.setToken = setToken
+    public init(setToken: ((inout [String: String]) -> Void)?) {
+          self.setToken = setToken ?? { headers in }
     }
     
     public func adapt(_ urlRequest: URLRequest, for session: Session, completion: @escaping (Result<URLRequest, Error>) -> Void) {

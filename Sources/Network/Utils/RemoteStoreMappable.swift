@@ -3,7 +3,7 @@ import ObjectMapper
 import Foundation
 import NetworkInterface
 
-open class RemoteStoreCodable<Item: Decodable>: RemoteStoreAlamofire, RemoteStoreObjects {
+open class RemoteStoreCodable<Item: Decodable>: AFNetworkService, RemoteStoreObjects {
 
     open func send(request: RequestProvider,
                      keyPath: String? = nil,
@@ -24,7 +24,7 @@ open class RemoteStoreCodable<Item: Decodable>: RemoteStoreAlamofire, RemoteStor
     }
 }
 
-open class RemoteStoreMappable<Item: BaseMappable>: RemoteStoreAlamofire, RemoteStoreObjects {
+open class RemoteStoreMappable<Item: BaseMappable>: AFNetworkService, RemoteStoreObjects {
 
     open func send(request: RequestProvider,
                         keyPath: String? = nil,
@@ -44,4 +44,5 @@ open class RemoteStoreMappable<Item: BaseMappable>: RemoteStoreAlamofire, Remote
         }
     }
 }
+
 

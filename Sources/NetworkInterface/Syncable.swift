@@ -4,8 +4,10 @@
 //
 //  Created by LEMIN DAHOVICH on 28.02.2023.
 //
-import Alamofire
+
+import Combine
 import Foundation
+
 
 public protocol Syncable {
     
@@ -13,7 +15,6 @@ public protocol Syncable {
     
     var remote: Remote { get }
 }
-
 
 public protocol RemoteStore {
     
@@ -28,4 +29,26 @@ public protocol RemoteStoreObjects: RemoteStore {
     
     func send(request: RequestProvider, keyPath: String?, responseObject: @escaping (Result<Item, Error>) -> Void)
     func send(request: RequestProvider, keyPath: String?, responseArray: @escaping (Result<[Item], Error>) -> Void)
+}
+    
+//MARK: - Reactive
+public protocol RSyncable {
+    
+    associatedtype Remote: RRemoteStore
+    
+    var remote: Remote { get }
+}
+
+public protocol RRemoteStore {
+    associatedtype StringPublisher: Publisher where StringPublisher.Output == String, StringPublisher.Failure == Error
+    associatedtype DataPublisher: Publisher where DataPublisher.Output == Data, DataPublisher.Failure == Error
+    associatedtype JSONPublisher: Publisher where JSONPublisher.Output == Any, JSONPublisher.Failure == Error
+    associatedtype ItemPublisher: Publisher where ItemPublisher.Failure == Error
+    
+    associatedtype Item: Decodable
+    
+    func send(request: RequestProvider) -> StringPublisher
+    func send(request: RequestProvider) -> DataPublisher
+    func send(request: RequestProvider) -> JSONPublisher
+    func send(request: RequestProvider, decodingType: Item.Type, keyPath: String?) -> ItemPublisher
 }

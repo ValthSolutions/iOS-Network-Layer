@@ -1,5 +1,6 @@
 import Alamofire
 import Foundation
+import Combine
 
 open class BaseHandler {
     
@@ -29,5 +30,34 @@ open class BaseHandler {
     
     open func responseError<T>(_ response: AFDataResponse<T>, error: Error) -> Result<T, Error> {
         .failure(error)
+    }
+}
+
+class CombineHandler: BaseHandler {
+    
+    func handle<T>(_ publisher: DataResponsePublisher<T>) -> AnyPublisher<T, Error> {
+        publisher
+            .tryMap { response in
+                guard let value = response.value else {
+                    throw response.error ?? AFError.responseSerializationFailed(reason: .inputDataNilOrZeroLength)
+                }
+                return value
+            }
+            .mapError { error -> Error in
+                error as Error
+            }
+            .eraseToAnyPublisher()
+    }
+    
+    override func handle<T>(_ response: AFDataResponse<T>) -> Result<T, Error> {
+        fatalError("Don't use this method, use handle(_:) instead")
+    }
+    
+    override func responseSuccess<T>(_ response: AFDataResponse<T>, item: T) -> Result<T, Error> {
+        fatalError("Don't use this method, use handle(_:) instead")
+    }
+    
+    override func responseError<T>(_ response: AFDataResponse<T>, error: Error) -> Result<T, Error> {
+        fatalError("Don't use this method, use handle(_:) instead")
     }
 }
