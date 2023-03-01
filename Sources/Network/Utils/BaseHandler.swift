@@ -33,31 +33,27 @@ open class BaseHandler {
     }
 }
 
-class CombineHandler: BaseHandler {
+import Alamofire
+import Combine
+
+open class CombineHandler {
     
-    func handle<T>(_ publisher: DataResponsePublisher<T>) -> AnyPublisher<T, Error> {
-        publisher
-            .tryMap { response in
-                guard let value = response.value else {
-                    throw response.error ?? AFError.responseSerializationFailed(reason: .inputDataNilOrZeroLength)
-                }
-                return value
-            }
-            .mapError { error -> Error in
-                error as Error
-            }
-            .eraseToAnyPublisher()
+    private let loger: RLog
+    
+    public init(_ loger: RLog) {
+        self.loger = loger
     }
     
-    override func handle<T>(_ response: AFDataResponse<T>) -> Result<T, Error> {
-        fatalError("Don't use this method, use handle(_:) instead")
+    open func handle<T>(_ response: DataResponsePublisher<T>) -> Result<T, Error> {
+        loger.log(response)
+
     }
     
-    override func responseSuccess<T>(_ response: AFDataResponse<T>, item: T) -> Result<T, Error> {
-        fatalError("Don't use this method, use handle(_:) instead")
+    open func responseSuccess<T>(_ response: DataResponsePublisher<T>, item: T) -> Result<T, Error> {
+        .success(item)
     }
     
-    override func responseError<T>(_ response: AFDataResponse<T>, error: Error) -> Result<T, Error> {
-        fatalError("Don't use this method, use handle(_:) instead")
+    open func responseError<T>(_ response: DataResponsePublisher<T>, error: Error) -> Result<T, Error> {
+        .failure(error)
     }
 }
