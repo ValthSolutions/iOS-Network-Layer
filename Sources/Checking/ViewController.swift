@@ -1,34 +1,74 @@
 //
-//  File.swift
-//  
+//  ViewController.swift
+//  bbb
 //
 //  Created by LEMIN DAHOVICH on 01.03.2023.
 //
-import Foundation
+
 import UIKit
+import Network
 import Combine
+import NetworkInterface
+
+private var bag = Set<AnyCancellable>()
+
 
 class ViewController: UIViewController {
-    let useCase: CheckUseCase
-    private var bag = Set<AnyCancellable>()
-    
-    init(useCase: CheckUseCase) {
-        self.useCase = useCase
-        super.init(nibName: nil, bundle: nil)
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        view.backgroundColor = .red
-
-    }
 
     deinit {
-        print("ViewController - DEINIT")
+        print("ASGFSAF")
+    }
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        
+        let session = AFSessionManager.default { token in
+            token["bearer"] = "1jbdi1df"
+        }
+        let networkService: AFNetworkServiceCombine = {
+            return AFNetworkServiceCombine(session: session)
+        }()
+        let service = AFDataTransferServiceCombine(with: networkService)
+        
+        
+        let dataSource = CheckDataSource(dataTransferService: service)
+        let repo = CheckRepository(remoteDataSource: dataSource)
+        let useCase = CheckUseCase(checkRepository: repo)
+        
+        func testRequest(useCase: CheckUseCase) {
+            useCase.executeRequest().receive(on: DispatchQueue.main).sink(receiveCompletion: { completion in
+                switch completion {
+                case let .failure(error):
+                    print(error)
+                case .finished:
+                    break
+                }
+            },
+            receiveValue: { checks in
+//                print(checks)
+            })
+            .store(in: &bag)
+        }
+        testRequest(useCase: useCase)
+        
+        func testDownload(useCase: CheckUseCase) {
+            useCase.executeDownload().receive(on: DispatchQueue.main).sink(receiveCompletion: { completion in
+                switch completion {
+                case let .failure(error):
+                    print(error)
+                case .finished:
+                    break
+                }
+            },
+            receiveValue: { checks in
+                print(checks)
+            })
+            .store(in: &bag)
+        }
+        testDownload(useCase: useCase)
+        
     }
     
+    
 }
+

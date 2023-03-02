@@ -7,7 +7,7 @@ open class AFNetworkServiceCombine {
     
     public let session: Session
     
-    public init(session: Session = Session()) {
+    public init(session: Session) {
         self.session = session
     }
     
@@ -43,13 +43,21 @@ open class AFNetworkServiceCombine {
     public func download(endpoint: Requestable) -> AnyPublisher<Data, Error> {
         do {
             let url = try endpoint.asURLRequest()
+            session.interceptor?.adapt(url, for: session, completion: { res in
+                switch res {
+                case .success(let resss):
+                    print(resss)
+                case .failure(let err):
+                    print(err)
+                }
+            })
+                
             return session
                 .download(url).publishData()
                 .tryMap { response -> Data in
                     guard let destinationURL = response.fileURL else {
                         throw DataTransferError.noResponse
                     }
-                    print("destinationURL: \(destinationURL)")
                     return try Data(contentsOf: destinationURL)
                 }
                 .mapError { error -> Error in
@@ -62,22 +70,25 @@ open class AFNetworkServiceCombine {
         }
     }
     
-    public func upload(_ data: Data, to url: URL) -> AnyPublisher<Data, Error> {
-        do {
-            return session
-                .upload(data, to: url)
-                .publishData()
-                .tryMap { response -> Data in
-                    guard let data = response.data else {
-                        throw AFError.responseSerializationFailed(reason: .inputDataNilOrZeroLength)
-                    }
-                    return data
+    public func upload<T: Decodable>(_ data: Data, to url: URL, responseType: T.Type) -> AnyPublisher<T, Error> {
+        Future<T, Error> { [weak self] promise in
+            self?.session.upload(data, to: url).responseDecodable(of: T.self) { response in
+                switch response.result {
+                case .success(let value):
+                    promise(.success(value))
+                case .failure(let error):
+                    promise(.failure(error))
                 }
-                .eraseToAnyPublisher()
-        } catch {
-            return Fail(error: error ).eraseToAnyPublisher()
-        }
+            }
+        }.eraseToAnyPublisher()
     }
+    
+    
+//    //return -> AnyPublisher<Decodable, Error>
+//    public func upload(_ data: Data, to url: URL) -> UploadRequest {
+//        return session.upload(data, to: url).responseDecodable(completionHandler: //)
+//    }
+    
     //
     //    public func upload(multipartFormData: @escaping (MultipartFormData) -> Void, to url: URL) -> AnyPublisher<Data, Error> {
     //        return session

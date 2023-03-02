@@ -27,12 +27,4 @@ extension CheckRepository {
         }
         .eraseToAnyPublisher()
     }
-    func checkUpload() -> AnyPublisher<CheckListDTO, DataTransferError> {
-        return remoteDataSource.checkDownload()
-        .map { list in
-            return list
-        }
-        .eraseToAnyPublisher()
-    }
-    
 }

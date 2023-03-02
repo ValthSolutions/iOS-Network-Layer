@@ -6,14 +6,15 @@ import NetworkInterface
 
 //MARK: - initialization
 /*
- let manager = AFSessionManager.default { headers in
-     headers["auth-token"] = "your_token_value"
+ let session = AFSessionManager.default { token in
+     token["bearer"] = "1jbdi1df"
  }
+
  */
 
 public class AFSessionManager: Session {
     
-    public static func `default`(setToken: ((inout [String: String]) -> Void)? = nil) -> AFSessionManager {
+    public static func `default`(setToken: ((inout [String: String]) -> Void)?) -> AFSessionManager {
         var interceptor: Interceptor?
         var adapter: TokenAdapter?
         
@@ -25,6 +26,7 @@ public class AFSessionManager: Session {
         return session
     }
 }
+
 
 
 public protocol NetworkConfigurable {

@@ -40,7 +40,7 @@ public final class AFDataTransferServiceCombine {
         }
     }
     
-    public func encode<T: Encodable>(_ value: T, encoder: DataEncoder) throws -> Data {
+    public func encode<E: Encodable>(_ value: E, encoder: DataEncoder) throws -> Data {
         return try encoder.encode(value)
     }
     
@@ -70,19 +70,11 @@ public final class AFDataTransferServiceCombine {
             .eraseToAnyPublisher()
     }
     
-    public func upload<T: Encodable>(_ value: T, to url: URL) -> AnyPublisher<Data, Error> {
-        do {
-            let encodedData = try self.encode(value, encoder: JSONEncoderData())
-            return networkService.upload(encodedData, to: url)
-                .mapError { error -> DataTransferError in
-                    print(error)
-                    return DataTransferError.noResponse
-                }
-                .eraseToAnyPublisher()
-        } catch {
-            return Fail(error: error).eraseToAnyPublisher()
-        }
+    public func request<T, E>(_ value: E, url: URL) -> AnyPublisher<T, Error> where T: Decodable, E: Encodable {
+        let encodedData = try! self.encode(value, encoder: JSONEncoderData())
+        return networkService.upload(encodedData, to: url, responseType: T.self)
     }
+
 
 //    public func upload<T: Decodable>(multipartFormData: @escaping (MultipartFormData) -> Void, to url: URL, decoder: ResponseDecoder) -> AnyPublisher<T, Error> {
 //        return networkService.upload(multipartFormData: multipartFormData, to: url)
