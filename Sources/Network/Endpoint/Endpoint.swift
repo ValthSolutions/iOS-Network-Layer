@@ -44,7 +44,6 @@ public class Endpoint<R>: ResponseRequestable {
         self.bodyEncoding = bodyEncoding
         self.responseDecoder = responseDecoder
     }
-    
 }
 
 extension Requestable {

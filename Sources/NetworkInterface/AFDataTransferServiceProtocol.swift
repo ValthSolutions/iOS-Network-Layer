@@ -7,6 +7,14 @@
 
 import Foundation
 import Combine
+import Alamofire
+
+public protocol AFDataTransferServiceProtocol {
+    func download<T, E>(_ endpoint: E) -> AnyPublisher<T, DataTransferError> where T: Decodable, T == E.Response, E: ResponseRequestable
+    func request<T, E>(_ endpoint: E) -> AnyPublisher<T, DataTransferError> where T: Decodable, T == E.Response, E: ResponseRequestable
+    func upload(_ value: String, url: URL) -> AnyPublisher<Progress, Error>
+    func upload(multipartFormData: @escaping (MultipartFormData) -> Void, to url: URL) -> AnyPublisher<Progress, Error>
+}
 
 public enum DataTransferError: Error {
   case noResponse

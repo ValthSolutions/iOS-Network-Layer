@@ -1,7 +1,14 @@
+//
+//  File.swift
+//
+//
+//  Created by LEMIN DAHOVICH on 28.02.2023.
+//
+
 import Foundation
 
 public class KeyPathDecoder: JSONDecoder {
-
+    
     let keyPath: String?
     
     public init(_ keyPath: String?) {

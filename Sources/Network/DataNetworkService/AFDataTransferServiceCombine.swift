@@ -10,24 +10,13 @@ import Alamofire
 import Combine
 import NetworkInterface
 
-public protocol DataTransferServiceProtocol {
-    func request<T: Decodable, E: ResponseRequestable>(with endpoint: E)
-    -> AnyPublisher<T, DataTransferError> where E.Response == T
-    
-    func request<E: ResponseRequestable>(with endpoint: E)
-    -> AnyPublisher<Data, DataTransferError> where E.Response == Data
-}
 
-
-public final class AFDataTransferServiceCombine {
+public final class AFDataTransferServiceCombine: AFDataTransferServiceProtocol {
     
     private let networkService: AFNetworkServiceCombine
-    private let logger: Log
     
-    public init(with networkService: AFNetworkServiceCombine,
-                logger: Log = DEBUGLog()) {
+    public init(with networkService: AFNetworkServiceCombine) {
         self.networkService = networkService
-        self.logger = logger
     }
     
     private func decode<T: Decodable>(data: Data, decoder: ResponseDecoder) throws -> T {
@@ -40,11 +29,12 @@ public final class AFDataTransferServiceCombine {
         }
     }
     
-    public func encode<E: Encodable>(_ value: E, encoder: DataEncoder) throws -> Data {
+    private func encode<E: Encodable>(_ value: E, encoder: DataEncoder) throws -> Data {
         return try encoder.encode(value)
     }
     
-    public func request<T, E>(_ endpoint: E) -> AnyPublisher<T, DataTransferError> where T: Decodable, T == E.Response, E: ResponseRequestable {
+    public func request<T, E>(_ endpoint: E) -> AnyPublisher<T, DataTransferError>
+    where T: Decodable, T == E.Response, E: ResponseRequestable {
         return networkService.request(endpoint: endpoint)
             .tryMap { data -> T in
                 let result: T = try self.decode(data: data, decoder: endpoint.responseDecoder)
@@ -57,7 +47,8 @@ public final class AFDataTransferServiceCombine {
             .eraseToAnyPublisher()
     }
     
-    public func download<T, E>(_ endpoint: E) -> AnyPublisher<T, DataTransferError> where T: Decodable, T == E.Response, E: ResponseRequestable {
+    public func download<T, E>(_ endpoint: E) -> AnyPublisher<T, DataTransferError>
+    where T: Decodable, T == E.Response, E: ResponseRequestable {
         return networkService.download(endpoint: endpoint)
             .tryMap { data -> T in
                 let result: T = try self.decode(data: data, decoder: endpoint.responseDecoder)
@@ -75,8 +66,8 @@ public final class AFDataTransferServiceCombine {
         return networkService.upload(encodedData, to: url)
     }
     
-    public func upload(multipartFormData: @escaping (MultipartFormData) -> Void, to url: URL) -> AnyPublisher<Progress, Error> {
+    public func upload(multipartFormData: @escaping (MultipartFormData) -> Void,
+                       to url: URL) -> AnyPublisher<Progress, Error> {
         return networkService.upload(multipartFormData: multipartFormData, to: url)
     }
-
 }

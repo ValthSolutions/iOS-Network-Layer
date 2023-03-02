@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import Foundation
 import NetworkInterface
 
 public class JSONEncoderData: DataEncoder {
