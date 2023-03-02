@@ -51,7 +51,7 @@ open class AFNetworkServiceCombine {
                     print(err)
                 }
             })
-                
+            
             return session
                 .download(url).publishData()
                 .tryMap { response -> Data in
@@ -69,13 +69,14 @@ open class AFNetworkServiceCombine {
             return Fail(error: error ).eraseToAnyPublisher()
         }
     }
-    
-    public func upload<T: Decodable>(_ data: Data, to url: URL, responseType: T.Type) -> AnyPublisher<T, Error> {
-        Future<T, Error> { [weak self] promise in
-            self?.session.upload(data, to: url).responseDecodable(of: T.self) { response in
+    public func upload(_ data: Data, to url: URL) -> AnyPublisher<Progress, Error> {
+        Future<Progress, Error> { [weak self] promise in
+            self?.session.upload(data, to: url).uploadProgress(closure: { progress in
+                promise(.success(progress))
+            }).response { response in
                 switch response.result {
-                case .success(let value):
-                    promise(.success(value))
+                case .success:
+                    break
                 case .failure(let error):
                     promise(.failure(error))
                 }
@@ -83,26 +84,39 @@ open class AFNetworkServiceCombine {
         }.eraseToAnyPublisher()
     }
     
-    
+    public func upload(multipartFormData: @escaping (MultipartFormData) -> Void, to url: URL) -> AnyPublisher<Data, Error> {
+        return session
+            .upload(multipartFormData: multipartFormData, to: url)
+            .publishData()
+            .tryMap { response -> Data in
+                guard let data = response.data else {
+                    throw AFError.responseSerializationFailed(reason: .inputDataNilOrZeroLength)
+                }
+                return data
+            }
+            .eraseToAnyPublisher()
+    }
+}
+
+
+//        .responseDecodable(of: Double.self) { response in
+//            switch response.result {
+//            case .success(let value):
+//                promise(.success(value))
+//            case .failure(let error):
+//                promise(.failure(error))
+//            }
+//        }
+//    }.eraseToAnyPublisher()
+
 //    //return -> AnyPublisher<Decodable, Error>
 //    public func upload(_ data: Data, to url: URL) -> UploadRequest {
 //        return session.upload(data, to: url).responseDecodable(completionHandler: //)
 //    }
-    
-    //
-    //    public func upload(multipartFormData: @escaping (MultipartFormData) -> Void, to url: URL) -> AnyPublisher<Data, Error> {
-    //        return session
-    //            .upload(multipartFormData: multipartFormData, to: url)
-    //            .publishData()
-    //            .tryMap { response -> Data in
-    //                guard let data = response.data else {
-    //                    throw AFError.responseSerializationFailed(reason: .inputDataNilOrZeroLength)
-    //                }
-    //                return data
-    //            }
-    //            .eraseToAnyPublisher()
-    //    }
-}
+
+//
+
+
 
 //
 //    public func upload(_ data: Data, to url: URL) {

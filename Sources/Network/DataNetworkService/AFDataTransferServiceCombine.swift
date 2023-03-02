@@ -70,37 +70,13 @@ public final class AFDataTransferServiceCombine {
             .eraseToAnyPublisher()
     }
     
-    public func upload<T: Decodable, E: Encodable>(_ value: E, url: URL) -> AnyPublisher<T, Error> {
-
+    public func upload(_ value: String, url: URL) -> AnyPublisher<Progress, Error> {
         let encodedData = try! self.encode(value, encoder: JSONEncoderData())
-        return networkService.upload(encodedData, to: url, responseType: Double)
-//            .flatMap { response -> AnyPublisher<T, Error> in
-//                do {
-//                    let decodedResponse = try self.decode(data: response as! Data, decoder: JSONResponseDecoder())
-//                    return Just(decodedResponse)
-//                        .setFailureType(to: Error.self)
-//                        .eraseToAnyPublisher()
-//                } catch {
-//                    return Fail(error: error)
-//                        .eraseToAnyPublisher()
-//                }
-//            }
-//            .eraseToAnyPublisher()
+        return networkService.upload(encodedData, to: url)
+    }
+    
+    public func upload(multipartFormData: @escaping (MultipartFormData) -> Void, to url: URL) -> AnyPublisher<Data, Error> {
+        return networkService.upload(multipartFormData: multipartFormData, to: url)
     }
 
-
-//    public func upload<T: Decodable>(multipartFormData: @escaping (MultipartFormData) -> Void, to url: URL, decoder: ResponseDecoder) -> AnyPublisher<T, Error> {
-//        return networkService.upload(multipartFormData: multipartFormData, to: url)
-//            .tryMap { [weak self] data -> T in
-//                guard let self = self else { throw DataTransferError.noResponse }
-//                return try self.decode(data: data, decoder: decoder)
-//            }
-//            .eraseToAnyPublisher()
-//    }
-}
-
- 
-
-extension AFDataTransferServiceCombine {
-    
 }

@@ -9,6 +9,7 @@ import UIKit
 import Combine
 import Network
 import NetworkInterface
+import Alamofire
 
 public final class CheckDataSource {
     
@@ -34,14 +35,21 @@ public final class CheckDataSource {
             method: .get, queryParameters:
                 [ "language": "en",
                   "api_key": "a5ac3411803536cfb4b1cd90557dc8a7"])
-        checkUpload()
         return dataTransferService.download(endpoint)
     }
     
-    func checkUpload() {
+    public func checkUpload() -> AnyPublisher<Progress, Error> {
         let hell = "Hello world"
-        let url = URL(string: "http://example.com/uploadText/")!
-//        let progress = try dataTransferService.upload(hell, to: url)
+        let url = URL(string: "https://google.com")!
+        return dataTransferService.upload(hell, url: url)
+    }
+    public func checkUploadMulti(_ multipartFormData: MultipartFormData) {
+        let hell = Data("Hello world".utf8)
+        let url = URL(string: "https://google.com")!
+        
+        dataTransferService.upload(multipartFormData: { multiPart in
+            multiPart.append(hell, withName: "ss")
+        }, to: url)
     }
 }
 

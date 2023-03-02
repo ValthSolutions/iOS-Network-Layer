@@ -7,6 +7,7 @@
 
 import UIKit
 import Network
+import Checking
 import Combine
 import NetworkInterface
 
@@ -17,10 +18,11 @@ class ViewController: UIViewController {
     deinit {
         print("ASGFSAF")
     }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        
+        //MARK: -
         let session = AFSessionManager.default { token in
             token["bearer"] = "1jbdi1df"
         }
@@ -34,6 +36,7 @@ class ViewController: UIViewController {
         let repo = CheckRepository(remoteDataSource: dataSource)
         let useCase = CheckUseCase(checkRepository: repo)
         
+        //MARK: -
         func testRequest(useCase: CheckUseCase) {
             useCase.executeRequest().receive(on: DispatchQueue.main).sink(receiveCompletion: { completion in
                 switch completion {
@@ -50,6 +53,7 @@ class ViewController: UIViewController {
         }
         testRequest(useCase: useCase)
         
+        //MARK: -
         func testDownload(useCase: CheckUseCase) {
             useCase.executeDownload().receive(on: DispatchQueue.main).sink(receiveCompletion: { completion in
                 switch completion {
@@ -65,7 +69,6 @@ class ViewController: UIViewController {
             .store(in: &bag)
         }
         testDownload(useCase: useCase)
-        
     }
     
     
