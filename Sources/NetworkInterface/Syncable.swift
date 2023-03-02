@@ -8,7 +8,6 @@
 import Combine
 import Foundation
 
-    
 //MARK: - Reactive
 public protocol RSyncable {
     

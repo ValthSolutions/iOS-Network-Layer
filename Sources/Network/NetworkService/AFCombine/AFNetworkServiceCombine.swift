@@ -3,7 +3,7 @@ import Foundation
 import NetworkInterface
 import Combine
 
-open class AFNetworkServiceCombine {
+open class AFNetworkServiceCombine: AFNetworkServiceProtocol {
     
     public let session: Session
     private let logger: Log
@@ -12,14 +12,7 @@ open class AFNetworkServiceCombine {
         self.session = session
         self.logger = logger
     }
-    
-    private func request(endpoint: Requestable) -> DataResponsePublisher<Data> {
-        guard let urlRequest = try? endpoint.asURLRequest() else {
-            fatalError("Not correct URLRequest format !!!")
-        }
-        return session.request(urlRequest).publishData()
-    }
-    
+ 
     public func request(endpoint: Requestable) -> AnyPublisher<Data, Error>  {
         do {
             let urlRequest = try endpoint.asURLRequest()

@@ -11,7 +11,7 @@ import Combine
 import NetworkInterface
 
 
-public final class AFDataTransferServiceCombine: AFDataTransferServiceProtocol {
+public final class AFDataTransferServiceCombine: AFDataTransferServiceCombineProtocol {
     
     private let networkService: AFNetworkServiceCombine
     

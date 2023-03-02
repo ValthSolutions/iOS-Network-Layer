@@ -9,7 +9,7 @@ import Foundation
 import Combine
 import Alamofire
 
-public protocol AFDataTransferServiceProtocol {
+public protocol AFDataTransferServiceCombineProtocol {
     func download<T, E>(_ endpoint: E) -> AnyPublisher<T, DataTransferError> where T: Decodable, T == E.Response, E: ResponseRequestable
     func request<T, E>(_ endpoint: E) -> AnyPublisher<T, DataTransferError> where T: Decodable, T == E.Response, E: ResponseRequestable
     func upload(_ value: String, url: URL) -> AnyPublisher<Progress, Error>
@@ -44,10 +44,4 @@ extension NetworkError {
     default: return false
     }
   }
-}
-
-public func printIfDebug(_ string: String) {
-  #if DEBUG
-  print(string)
-  #endif
 }
