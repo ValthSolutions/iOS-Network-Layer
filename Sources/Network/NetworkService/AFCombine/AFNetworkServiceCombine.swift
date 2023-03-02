@@ -84,19 +84,22 @@ open class AFNetworkServiceCombine {
         }.eraseToAnyPublisher()
     }
     
-    public func upload(multipartFormData: @escaping (MultipartFormData) -> Void, to url: URL) -> AnyPublisher<Data, Error> {
-        return session
-            .upload(multipartFormData: multipartFormData, to: url)
-            .publishData()
-            .tryMap { response -> Data in
-                guard let data = response.data else {
-                    throw AFError.responseSerializationFailed(reason: .inputDataNilOrZeroLength)
+    public func upload(multipartFormData: @escaping (MultipartFormData) -> Void, to url: URL) -> AnyPublisher<Progress, Error> {
+        Future<Progress, Error> { [weak self] promise in
+            self?.session.upload(multipartFormData: multipartFormData, to: url).uploadProgress(closure: { progress in
+                promise(.success(progress))
+            }).response { response in
+                switch response.result {
+                case .success:
+                    break
+                case .failure(let error):
+                    promise(.failure(error))
                 }
-                return data
             }
-            .eraseToAnyPublisher()
+        }.eraseToAnyPublisher()
     }
 }
+//        .upload(multipartFormData: multipartFormData, to: url)
 
 
 //        .responseDecodable(of: Double.self) { response in

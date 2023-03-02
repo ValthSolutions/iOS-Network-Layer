@@ -43,16 +43,11 @@ public final class CheckDataSource {
         let url = URL(string: "https://google.com")!
         return dataTransferService.upload(hell, url: url)
     }
-    public func checkUploadMulti(_ multipartFormData: MultipartFormData) {
-        let hell = Data("Hello world".utf8)
+    public func checkUploadMulti(multipartFormData: @escaping (MultipartFormData) -> Void) -> AnyPublisher<Progress, Error> {
         let url = URL(string: "https://google.com")!
-        
-        dataTransferService.upload(multipartFormData: { multiPart in
-            multiPart.append(hell, withName: "ss")
-        }, to: url)
+        return dataTransferService.upload(multipartFormData: multipartFormData, to: url)
     }
 }
-
 public struct CheckListDTO: Decodable {
     public let genres: [CheckDTO]
 }

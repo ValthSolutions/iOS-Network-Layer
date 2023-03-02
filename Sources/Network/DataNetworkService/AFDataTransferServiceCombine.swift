@@ -75,7 +75,7 @@ public final class AFDataTransferServiceCombine {
         return networkService.upload(encodedData, to: url)
     }
     
-    public func upload(multipartFormData: @escaping (MultipartFormData) -> Void, to url: URL) -> AnyPublisher<Data, Error> {
+    public func upload(multipartFormData: @escaping (MultipartFormData) -> Void, to url: URL) -> AnyPublisher<Progress, Error> {
         return networkService.upload(multipartFormData: multipartFormData, to: url)
     }
 
