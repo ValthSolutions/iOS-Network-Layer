@@ -10,10 +10,9 @@ import Network
 import Combine
 import NetworkInterface
 
-private var bag = Set<AnyCancellable>()
-
-
 class ViewController: UIViewController {
+    
+    private var bag = Set<AnyCancellable>()
 
     deinit {
         print("ASGFSAF")

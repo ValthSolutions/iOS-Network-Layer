@@ -70,9 +70,22 @@ public final class AFDataTransferServiceCombine {
             .eraseToAnyPublisher()
     }
     
-    public func request<T, E>(_ value: E, url: URL) -> AnyPublisher<T, Error> where T: Decodable, E: Encodable {
+    public func upload<T: Decodable, E: Encodable>(_ value: E, url: URL) -> AnyPublisher<T, Error> {
+
         let encodedData = try! self.encode(value, encoder: JSONEncoderData())
-        return networkService.upload(encodedData, to: url, responseType: T.self)
+        return networkService.upload(encodedData, to: url, responseType: Double)
+//            .flatMap { response -> AnyPublisher<T, Error> in
+//                do {
+//                    let decodedResponse = try self.decode(data: response as! Data, decoder: JSONResponseDecoder())
+//                    return Just(decodedResponse)
+//                        .setFailureType(to: Error.self)
+//                        .eraseToAnyPublisher()
+//                } catch {
+//                    return Fail(error: error)
+//                        .eraseToAnyPublisher()
+//                }
+//            }
+//            .eraseToAnyPublisher()
     }
 
 

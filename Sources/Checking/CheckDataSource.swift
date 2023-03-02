@@ -41,26 +41,21 @@ public final class CheckDataSource {
     func checkUpload() {
         let hell = "Hello world"
         let url = URL(string: "http://example.com/uploadText/")!
-        do {
-            let progress = try dataTransferService.upload(hell, to: url)
-            print(progress)
-        } catch let error {
-            print("Error uploading data: \(error)")
-        }
+//        let progress = try dataTransferService.upload(hell, to: url)
     }
 }
 
 public struct CheckListDTO: Decodable {
-  public let genres: [CheckDTO]
+    public let genres: [CheckDTO]
 }
 
 
 public struct CheckDTO: Decodable {
-  public let id: Int
-  public let name: String
-
-  enum CodingKeys: String, CodingKey {
-    case id
-    case name
-  }
+    public let id: Int
+    public let name: String
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case name
+    }
 }
