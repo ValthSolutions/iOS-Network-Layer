@@ -45,6 +45,7 @@ public protocol ResponseRequestable: Requestable {
 
 public protocol ResponseDecoder {
     func decode<T: Decodable>(_ data: Data) throws -> T
+    func decode<T: Decodable>(_ data: Data, keyPath: String) throws -> T
 }
 
 public enum RequestGenerationError: Error {

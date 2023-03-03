@@ -50,7 +50,7 @@ extension Requestable {
     func asURLRequest() throws -> URLRequest {
         let url = try url()
         var urlRequest = URLRequest(url: url)
-        var allHeaders: [String: String] = headerParameters
+        let allHeaders: [String: String] = headerParameters
         let bodyParameters = try bodyParametersEncodable?.toDictionary() ?? self.bodyParameters
         if !bodyParameters.isEmpty {
             urlRequest.httpBody = encodeBody(bodyParamaters: bodyParameters, bodyEncoding: bodyEncoding)
