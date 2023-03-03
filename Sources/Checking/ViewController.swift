@@ -38,18 +38,14 @@ class ViewController: UIViewController {
         
         //MARK: -
         func testRequest(useCase: CheckUseCase) {
-            useCase.executeRequest().receive(on: DispatchQueue.main).sink(receiveCompletion: { completion in
-                switch completion {
-                case let .failure(error):
-                    print(error)
-                case .finished:
-                    break
-                }
-            },
-            receiveValue: { checks in
-//                print(checks)
-            })
-            .store(in: &bag)
+            dataSource.checkList()
+                .receive(on: DispatchQueue.main)
+                .sink { complition in
+                    print(complition)
+                } receiveValue: { check in
+                    print(check)
+                }.store(in: &bag)
+
         }
         testRequest(useCase: useCase)
         

@@ -11,15 +11,6 @@ public final class CheckRepository {
 }
 
 extension CheckRepository {
-
-  func checkList() -> AnyPublisher<CheckListDTO, DataTransferError> {
-      return remoteDataSource.checkList()
-      .map { list in
-          return list
-      }
-      .eraseToAnyPublisher()
-  }
-    
     func checkDownload() -> AnyPublisher<CheckListDTO, DataTransferError> {
         return remoteDataSource.checkDownload()
         .map { list in

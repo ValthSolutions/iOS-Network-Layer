@@ -11,15 +11,21 @@ import NetworkInterface
 public class JSONResponseDecoder: ResponseDecoder {
     
     private let jsonDecoder = JSONDecoder()
+    private let keyPathDecoder: KeyPathDecoder?
     
-    public init() {}
-    
-    public func decode<T: Decodable>(_ data: Data) throws -> T {
-            return try jsonDecoder.decode(T.self, from: data)
+    public init(_ keyPath: String? = nil) {
+        if let keyPath = keyPath {
+            self.keyPathDecoder = KeyPathDecoder(keyPath)
+        } else {
+            self.keyPathDecoder = nil
+        }
     }
     
-    public func decode<T: Decodable>(_ data: Data, keyPath: String) throws -> T {
-        let keyPathDecoder = KeyPathDecoder(keyPath)
-        return try keyPathDecoder.decode(T.self, from: data)
+    public func decode<T: Decodable>(_ data: Data) throws -> T {
+        if let keyPathDecoder = keyPathDecoder {
+            return try keyPathDecoder.decode(T.self, from: data)
+        } else {
+            return try jsonDecoder.decode(T.self, from: data)
+        }
     }
 }

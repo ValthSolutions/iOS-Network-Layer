@@ -32,7 +32,8 @@ public class Endpoint<R>: ResponseRequestable {
                 bodyParametersEncodable: Encodable? = nil,
                 bodyParameters: [String: Any] = [:],
                 bodyEncoding: BodyEncoding = .jsonSerializationData,
-                responseDecoder: ResponseDecoder = JSONResponseDecoder()) {
+                keyPath: String? = nil) {
+        let responseDecoder = keyPath != nil ? JSONResponseDecoder(keyPath!) : JSONResponseDecoder()
         self.path = path
         self.isFullPath = isFullPath
         self.method = method
