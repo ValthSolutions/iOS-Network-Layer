@@ -16,15 +16,15 @@ let package = Package(
             name: "Network",
             targets: ["Network"]),
         .library(
-            name: "Checking",
-            targets: ["Checking"]),
+            name: "iOS_Demo",
+            targets: ["iOS_Demo"]),
     ],
     dependencies: [
         .package(url: "https://github.com/Alamofire/Alamofire.git", .upToNextMajor(from: "5.6.1")),
     ],
     targets: [
         .target(
-            name: "Checking",
+            name: "iOS_Demo",
             dependencies: [
             "NetworkInterface", "Network"
             ]),
