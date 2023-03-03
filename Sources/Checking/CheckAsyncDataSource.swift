@@ -14,7 +14,6 @@ import Alamofire
 public final class CheckAsyncDataSource {
     
     private let dataTransferService: AFDataTransferService
-    private let jsonDecoder = JSONDecoder()
     
     public init(dataTransferService: AFDataTransferService) {
         self.dataTransferService = dataTransferService
