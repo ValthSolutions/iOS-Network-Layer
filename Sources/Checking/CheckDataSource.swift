@@ -74,19 +74,19 @@ public struct CheckDTO: Decodable {
     }
 }
 
-public struct MoviePageDTO: Decodable {
-  public let page: Int
-  public let results: [Movie2DTO]
-  public let totalPages: Int
-  public let totalResults: Int
-
-  enum CodingKeys: String, CodingKey {
-    case page
-    case results = "results"
-    case totalPages = "total_pages"
-    case totalResults = "total_results"
-  }
-}
+//public struct MoviePageDTO: Decodable {
+//  public let page: Int
+//  public let results: [Movie2DTO]
+//  public let totalPages: Int
+//  public let totalResults: Int
+//
+//  enum CodingKeys: String, CodingKey {
+//    case page
+//    case results = "results"
+//    case totalPages = "total_pages"
+//    case totalResults = "total_results"
+//  }
+//}
 
 public struct Movie2DTO: Decodable {
   public let id: Int

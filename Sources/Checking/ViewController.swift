@@ -6,23 +6,23 @@
 //
 
 import UIKit
-import Network
 import Checking
+import Network
 import Combine
 import NetworkInterface
 
+private var bag = Set<AnyCancellable>()
+
+
 class ViewController: UIViewController {
-    
-    private var bag = Set<AnyCancellable>()
 
     deinit {
         print("ASGFSAF")
     }
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        //MARK: -
+        
         let session = AFSessionManager.default { token in
             token["bearer"] = "1jbdi1df"
         }
@@ -36,8 +36,19 @@ class ViewController: UIViewController {
         let repo = CheckRepository(remoteDataSource: dataSource)
         let useCase = CheckUseCase(checkRepository: repo)
         
-        //MARK: -
-        func testRequest(useCase: CheckUseCase) {
+        func testKeypath() {
+            dataSource.checkKeyPaths()
+                .receive(on: DispatchQueue.main)
+                .sink { complition in
+                    print(complition)
+                } receiveValue: { check in
+                    print(check)
+                }.store(in: &bag)
+
+        }
+        testKeypath()
+        
+        func testRequest() {
             dataSource.checkList()
                 .receive(on: DispatchQueue.main)
                 .sink { complition in
@@ -47,9 +58,8 @@ class ViewController: UIViewController {
                 }.store(in: &bag)
 
         }
-        testRequest(useCase: useCase)
+        testRequest()
         
-        //MARK: -
         func testDownload(useCase: CheckUseCase) {
             useCase.executeDownload().receive(on: DispatchQueue.main).sink(receiveCompletion: { completion in
                 switch completion {
@@ -60,13 +70,18 @@ class ViewController: UIViewController {
                 }
             },
             receiveValue: { checks in
-                print(checks)
+
             })
             .store(in: &bag)
         }
+        
         testDownload(useCase: useCase)
+        dataSource.checkUpload()
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in }) { result in
+                print(result)
+            }
     }
-    
-    
+
 }
 
