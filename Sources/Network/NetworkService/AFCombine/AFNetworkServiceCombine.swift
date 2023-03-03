@@ -3,7 +3,7 @@ import Foundation
 import NetworkInterface
 import Combine
 
-open class AFNetworkServiceCombine: AFNetworkServiceProtocol {
+open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
     
     public let session: Session
     private let logger: Log

@@ -3,7 +3,7 @@ import Alamofire
 import Foundation
 import NetworkInterface
 
-open class AFNetworkService {
+open class AFNetworkService: AFNetworkServiceProtocol {
     
     public let session: Session
     private let logger: Log
@@ -44,7 +44,8 @@ open class AFNetworkService {
         }
     }
     
-    public func upload(multipartFormData: @escaping (MultipartFormData) -> Void, to url: URL) async throws -> Progress {
+    public func upload(multipartFormData: @escaping (MultipartFormData) -> Void,
+                       to url: URL) async throws -> Progress {
         return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Progress, Error>) in
             self.session.upload(multipartFormData: multipartFormData, to: url).uploadProgress(closure: { progress in
                 continuation.resume(returning: progress)
