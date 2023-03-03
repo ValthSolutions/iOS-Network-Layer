@@ -38,7 +38,7 @@ class ViewController: UIViewController {
             .sink { complition in
                 print(complition)
             } receiveValue: { check in
-//                print(check)
+                print(check)
             }.store(in: &bag)
         
         dataSource.checkList()
@@ -46,7 +46,7 @@ class ViewController: UIViewController {
             .sink { complition in
                 print(complition)
             } receiveValue: { check in
-               // print(check)
+                print(check)
             }.store(in: &bag)
         
         dataSource.checkDownload()

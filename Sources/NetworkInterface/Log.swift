@@ -8,9 +8,10 @@ import Alamofire
 import Foundation
 
 public protocol Log {
-    func log<T>(_ response: AFDataResponse<T?>)
-    func log<T, E>(_ response: DataResponse<T, E>)
+    func log<T>(_ response: AFDataResponse<T?>, _ config: Requestable?)
+    func log<T, E>(_ response: DataResponse<T, E>, _ config: Requestable?)
+    func log(_ response:  DownloadResponsePublisher<Data>.Output, _ config: Requestable?)
+
     func success<T>(_ value: T)
     func failure(_ error: Error)
-    func log(_ response:  DownloadResponsePublisher<Data>.Output)
 }

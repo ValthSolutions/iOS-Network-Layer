@@ -20,14 +20,14 @@ open class AFNetworkService: AFNetworkServiceProtocol {
     public func request(endpoint: Requestable) async throws -> Data {
         let urlRequest = try endpoint.asURLRequest(config: configuration)
         let response = session.request(urlRequest).serializingData()
-        await logger.log(response.response)
+//        await logger.log(response.response)
         return try await response.value
     }
     
     public func download(endpoint: Requestable) async throws -> Data {
         let urlRequest = try endpoint.asURLRequest(config: configuration)
         let response = session.download(urlRequest).serializingData()
-        await logger.log(response.response)
+//        await logger.log(response.response)
         return try await response.value
     }
     
@@ -36,7 +36,7 @@ open class AFNetworkService: AFNetworkServiceProtocol {
             self.session.upload(data, to: url).uploadProgress(closure: { progress in
                 continuation.resume(returning: progress)
             }).response { response in
-                self.logger.log(response)
+//                self.logger.log(response)
                 switch response.result {
                 case .success:
                     break
@@ -53,7 +53,7 @@ open class AFNetworkService: AFNetworkServiceProtocol {
             self.session.upload(multipartFormData: multipartFormData, to: url).uploadProgress(closure: { progress in
                 continuation.resume(returning: progress)
             }).response { response in
-                self.logger.log(response)
+//                self.logger.log(response)
                 switch response.result {
                 case .success:
                     break

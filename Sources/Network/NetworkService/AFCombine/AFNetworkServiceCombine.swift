@@ -16,26 +16,36 @@ open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
         self.logger = logger
         self.configuration = configuration
     }
- 
+    
     public func request(endpoint: Requestable) -> AnyPublisher<Data, Error>  {
         do {
             let urlRequest = try endpoint.asURLRequest(config: configuration)
             return session
                 .request(urlRequest)
                 .publishData()
-                .tryMap { response -> Data in
-//                    self.logger.log(response) ///logger is working
-                    guard let data = response.data else {
+                .tryMap { [weak self] response -> Data in
+                    self?.logger.log(response, endpoint)
+                    guard let data = response.data,
+                          let statusCode = response.response?.statusCode else {
                         throw AFError.responseSerializationFailed(reason: .inputDataNilOrZeroLength)
                     }
-                    return data
+                    
+                    if (200...299).contains(statusCode) {
+                        return data
+                    } else {
+                        throw NetworkError.error(statusCode: statusCode, data: data)
+                    }
                 }
                 .mapError { error -> Error in
-                    return error
+                    if let afError = error as? AFError {
+                        return afError.underlyingError ?? NetworkError.generic(error)
+                    } else {
+                        return NetworkError.generic(error)
+                    }
                 }
                 .eraseToAnyPublisher()
         } catch {
-            return Fail(error: error ).eraseToAnyPublisher()
+            return Fail(error: NetworkError.urlGeneration).eraseToAnyPublisher()
         }
     }
     
@@ -45,19 +55,23 @@ open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
             return session
                 .download(urlRequest)
                 .publishData()
-                .tryMap { response -> Data in
-//                    self.logger.log(response)  ////logger is working
+                .tryMap { [weak self] response -> Data in
+                    self?.logger.log(response, endpoint)
                     guard let destinationURL = response.fileURL else {
                         throw DataTransferError.noResponse
                     }
                     return try Data(contentsOf: destinationURL)
                 }
                 .mapError { error -> Error in
-                    return error
+                    if let afError = error as? AFError {
+                        return afError.underlyingError ?? NetworkError.generic(error)
+                    } else {
+                        return NetworkError.generic(error)
+                    }
                 }
                 .eraseToAnyPublisher()
         } catch {
-            return Fail(error: error ).eraseToAnyPublisher()
+            return Fail(error: NetworkError.urlGeneration).eraseToAnyPublisher()
         }
     }
     
@@ -66,13 +80,16 @@ open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
             self?.session.upload(data, to: url).uploadProgress(closure: { progress in
                 promise(.success(progress))
             }).response { response in
-                self?.logger.log(response) //doesnt work
-//                DEBUGLog().log(response) //and here my logger is working
+                DEBUGLog().log(response)
                 switch response.result {
                 case .success:
                     break
                 case .failure(let error):
-                    promise(.failure(error))
+                    if let afError = error as? AFError {
+                        promise(.failure(afError.underlyingError ?? NetworkError.generic(error)))
+                    } else {
+                        promise(.failure(NetworkError.generic(error)))
+                    }
                 }
             }
         }.eraseToAnyPublisher()
@@ -85,13 +102,29 @@ open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
                                  to: url).uploadProgress(closure: { progress in
                 promise(.success(progress))
             }).response { response in
-                self?.logger.log(response) //but if i use like this, then it doesnt work
-//                DEBUGLog().log(response) //and here my logger is working
+                DEBUGLog().log(response)
                 switch response.result {
                 case .success:
                     break
                 case .failure(let error):
-                    promise(.failure(error))
+                    promise(.failure(NetworkError.generic(error)))
+                }
+            }
+            .validate(statusCode: 200..<300)
+            .responseData { response in
+                switch response.result {
+                case .success(_):
+                    break
+                case .failure(let error):
+                    if error.isExplicitlyCancelledError {
+                        promise(.failure(NetworkError.cancelled))
+                    } else if error.isSessionTaskError || error.isResponseValidationError {
+                        promise(.failure(NetworkError.generic(error)))
+                    } else {
+                        let statusCode = response.response?.statusCode ?? -1
+                        let data = response.data ?? Data()
+                        promise(.failure(NetworkError.error(statusCode: statusCode, data: data)))
+                    }
                 }
             }
         }.eraseToAnyPublisher()

@@ -4,40 +4,42 @@ import NetworkInterface
 
 public struct DEBUGLog: Log {
     
-    let separator = " "
-    let empty = "----"
+    private let separator = " "
+    private let empty = "----"
     
     public init() {}
     
-    public func log<T>(_ response: AFDataResponse<T?>) {
-        print("DESCRIPTION ")
+    public func log<T>(_ response: AFDataResponse<T?>,
+                       _ config: Requestable? = nil) {
         divider()
         methodName(response.request?.httpMethod)
         urlPath(response.request?.url?.absoluteString)
+        parameters(config?.queryParameters)
         header(response.request?.allHTTPHeaderFields)
-        parameters(response.request?.httpBody)
         statusCode(response.response?.statusCode)
         metrics(response.metrics)
         jsonResponse(response.data)
     }
     
-    public func log<T, E>(_ response: DataResponse<T, E>) {
+    public func log<T, E>(_ response: DataResponse<T, E>,
+                          _ config: Requestable? = nil) {
         divider()
         methodName(response.request?.httpMethod)
         urlPath(response.request?.url?.absoluteString)
+        parameters(config?.queryParameters)
         header(response.request?.allHTTPHeaderFields)
-        parameters(response.request?.httpBody)
         statusCode(response.response?.statusCode)
         metrics(response.metrics)
         jsonResponse(response.data)
     }
     
-    public func log(_ response:  DownloadResponsePublisher<Data>.Output) {
+    public func log(_ response:  DownloadResponsePublisher<Data>.Output,
+                    _ config: Requestable? = nil) {
         divider()
         methodName(response.request?.httpMethod)
         urlPath(response.request?.url?.absoluteString)
+        parameters(config?.queryParameters)
         header(response.request?.allHTTPHeaderFields)
-        parameters(response.request?.httpBody)
         statusCode(response.response?.statusCode)
         metrics(response.metrics)
         jsonResponse(response.value)
@@ -77,20 +79,21 @@ public struct DEBUGLog: Log {
     
     fileprivate func header(_ header: [String: String]?) {
         if let header = header, header.isEmpty == false {
-            
             let string = header.compactMap {
-                "\($0): \($1)"
+                "[\($0): \($1)]"
             }.joined(separator: "\n           ")
-            
             print("📘 Header:", string, separator: separator)
         } else {
             print("📓 Header:", empty, separator: separator)
         }
     }
     
-    fileprivate func parameters(_ data: Data?) {
-        if let parameters = data.flatMap { $0.prettyPrintedJSONString } {
-            print("📘 Parameters:", parameters, separator: separator)
+    fileprivate func parameters(_ parameters: [String: Any]?) {
+        if let parameters = parameters, parameters.isEmpty == false {
+            let string = parameters.compactMap {
+                "[\($0): \($1)]"
+            }.joined(separator: "\n           ")
+            print("📘 Parameters:", string, separator: separator)
         } else {
             print("📓 Parameters:", empty, separator: separator)
         }
@@ -136,7 +139,6 @@ public struct DEBUGLog: Log {
         }
     }
 }
-
 extension Data {
     
     var prettyPrintedJSONString: NSString? {
