@@ -43,13 +43,14 @@ open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
                 .download(url)
                 .publishData()
                 .tryMap { response -> Data in
+                    self.logger.log(response)
                     guard let destinationURL = response.fileURL else {
                         throw DataTransferError.noResponse
                     }
                     return try Data(contentsOf: destinationURL)
                 }
                 .mapError { error -> Error in
-                    print(error)
+                    self.logger.failure(error)
                     return error
                 }
                 .eraseToAnyPublisher()

@@ -6,6 +6,7 @@ public protocol Log {
     func log<T>(_ response: DataResponse<T, AFError>)
     func success<T>(_ value: T)
     func failure(_ error: Error)
+    func log(_ response:  DownloadResponsePublisher<Data>.Output)
 }
 
 public struct DEBUGLog: Log {
@@ -25,6 +26,17 @@ public struct DEBUGLog: Log {
         statusCode(response.response?.statusCode)
         metrics(response.metrics)
         jsonResponse(response.data)
+    }
+    
+    public func log(_ response:  DownloadResponsePublisher<Data>.Output) {
+        divider()
+        methodName(response.request?.httpMethod)
+        urlPath(response.request?.url?.absoluteString)
+        header(response.request?.allHTTPHeaderFields)
+        parameters(response.request?.httpBody)
+        statusCode(response.response?.statusCode)
+        metrics(response.metrics)
+        jsonResponse(response.value)
     }
     
     public func success<T>(_ value: T) {
