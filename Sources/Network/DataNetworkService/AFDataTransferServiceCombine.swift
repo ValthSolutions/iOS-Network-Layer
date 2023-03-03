@@ -26,8 +26,16 @@ public final class AFDataTransferServiceCombine: DataTransferService, AFDataTran
                 return result
             }
             .mapError { error -> DataTransferError in
-                print(error)
-                return DataTransferError.noResponse
+                switch error {
+                case AFError.responseValidationFailed(reason: .unacceptableStatusCode(code: let statusCode)):
+                    return .networkFailure(.unacceptableStatusCode(statusCode: statusCode))
+                case AFError.sessionDeinitialized,
+                     AFError.explicitlyCancelled,
+                     AFError.responseSerializationFailed(reason: _):
+                    return .resolvedNetworkFailure(error)
+                default:
+                    return .networkFailure(.unknown)
+                }
             }
             .eraseToAnyPublisher()
     }
@@ -40,19 +48,47 @@ public final class AFDataTransferServiceCombine: DataTransferService, AFDataTran
                 return result
             }
             .mapError { error -> DataTransferError in
-                print(error)
-                return DataTransferError.noResponse
+                switch error {
+                case AFError.responseValidationFailed(reason: .unacceptableStatusCode(code: let statusCode)):
+                    return .networkFailure(.unacceptableStatusCode(statusCode: statusCode))
+                case AFError.sessionDeinitialized,
+                     AFError.explicitlyCancelled,
+                     AFError.responseSerializationFailed(reason: _):
+                    return .resolvedNetworkFailure(error)
+                default:
+                    return .networkFailure(.unknown)
+                }
             }
             .eraseToAnyPublisher()
     }
     
-    public func upload(_ value: String, url: URL) -> AnyPublisher<Progress, Error> {
+    public func upload(_ value: String, url: URL) -> AnyPublisher<Progress, DataTransferError> {
         let encodedData = try! self.encode(value, encoder: JSONEncoderData())
         return networkService.upload(encodedData, to: url)
+            .mapError { error -> DataTransferError in
+                switch error {
+                case AFError.sessionDeinitialized,
+                     AFError.explicitlyCancelled:
+                    return .resolvedNetworkFailure(error)
+                default:
+                    return .networkFailure(.unknown)
+                }
+            }
+            .eraseToAnyPublisher()
     }
     
     public func upload(multipartFormData: @escaping (MultipartFormData) -> Void,
-                       to url: URL) -> AnyPublisher<Progress, Error> {
+                       to url: URL) -> AnyPublisher<Progress, DataTransferError> {
         return networkService.upload(multipartFormData: multipartFormData, to: url)
+            .mapError { error -> DataTransferError in
+                switch error {
+                case AFError.sessionDeinitialized,
+                     AFError.explicitlyCancelled:
+                    return .resolvedNetworkFailure(error)
+                default:
+                    return .networkFailure(.unknown)
+                }
+            }
+            .eraseToAnyPublisher()
     }
 }

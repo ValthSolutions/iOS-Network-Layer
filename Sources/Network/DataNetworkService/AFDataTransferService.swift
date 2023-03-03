@@ -19,25 +19,41 @@ public final class AFDataTransferService: DataTransferService, AFDataTransferSer
     
     public func request<T: Decodable, E: ResponseRequestable>(_ endpoint: E) async throws -> T {
         let responseData = try await networkService.request(endpoint: endpoint)
-        let decodedData: T = try decode(data: responseData, decoder: endpoint.responseDecoder)
-        return decodedData
+        do {
+            let decodedData: T = try decode(data: responseData, decoder: endpoint.responseDecoder)
+            return decodedData
+        } catch let error {
+            throw DataTransferError.parsing(error)
+        }
     }
     
     public func download<T: Decodable, E: ResponseRequestable>(_ endpoint: E) async throws -> T {
         let responseData = try await networkService.download(endpoint: endpoint)
-        let decodedData: T = try decode(data: responseData, decoder: endpoint.responseDecoder)
-        return decodedData
+        do {
+            let decodedData: T = try decode(data: responseData, decoder: endpoint.responseDecoder)
+            return decodedData
+        } catch let error {
+            throw DataTransferError.parsing(error)
+        }
     }
     
     public func upload(_ value: String, url: URL) async throws -> Progress {
         let encodedData = try encode(value, encoder: JSONEncoderData())
-        let progress = try await networkService.upload(encodedData, to: url)
-        return progress
+        do {
+            let progress = try await networkService.upload(encodedData, to: url)
+            return progress
+        } catch let error {
+            throw DataTransferError.resolvedNetworkFailure(error)
+        }
     }
 
     public func upload(multipartFormData: @escaping (MultipartFormData) -> Void,
                        to url: URL) async throws -> Progress {
-        let progress = try await networkService.upload(multipartFormData: multipartFormData, to: url)
-        return progress
+        do {
+            let progress = try await networkService.upload(multipartFormData: multipartFormData, to: url)
+            return progress
+        } catch let error {
+            throw DataTransferError.resolvedNetworkFailure(error)
+        }
     }
 }

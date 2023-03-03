@@ -35,13 +35,13 @@ public final class CheckDataSource {
         return dataTransferService.download(endpoint)
     }
     
-    public func checkUpload() -> AnyPublisher<Progress, Error> {
+    public func checkUpload() -> AnyPublisher<Progress, DataTransferError> {
         let hell = "Hello world"
         let url = URL(string: "https://google.com")!
         return dataTransferService.upload(hell, url: url)
     }
     
-    public func checkUploadMulti(multipartFormData: @escaping (MultipartFormData) -> Void) -> AnyPublisher<Progress, Error> {
+    public func checkUploadMulti(multipartFormData: @escaping (MultipartFormData) -> Void) -> AnyPublisher<Progress, DataTransferError> {
         let url = URL(string: "https://google.com")!
         return dataTransferService.upload(multipartFormData: multipartFormData, to: url)
     }
