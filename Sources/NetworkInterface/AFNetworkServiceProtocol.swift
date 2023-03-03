@@ -23,5 +23,5 @@ public protocol AFNetworkServiceProtocol {
     func download(endpoint: Requestable) async throws -> Data
     func upload(_ data: Data, to url: URL) async throws -> Progress
     func upload(multipartFormData: @escaping (MultipartFormData) -> Void,
-                to url: URL) async throws -> Progress 
+                to url: URL) async throws -> Progress
 }

@@ -31,7 +31,6 @@ public enum DataTransferError: Error {
   case resolvedNetworkFailure(Error)
 }
 
-
 public enum NetworkError: Error {
   case error(statusCode: Int, data: Data)
   case notConnected

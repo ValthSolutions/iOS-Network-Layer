@@ -47,10 +47,10 @@ public protocol ResponseDecoder {
     func decode<T: Decodable>(_ data: Data) throws -> T
 }
 
-public protocol DataEncoder {
-    func encode<T: Encodable>(_ data: T) throws -> Data
-}
-
 public enum RequestGenerationError: Error {
     case components
+}
+
+public protocol DataEncoder {
+    func encode<T: Encodable>(_ data: T) throws -> Data
 }

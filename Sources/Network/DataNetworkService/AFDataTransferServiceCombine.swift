@@ -10,26 +10,12 @@ import Alamofire
 import Combine
 import NetworkInterface
 
-public final class AFDataTransferServiceCombine: AFDataTransferServiceCombineProtocol {
+public final class AFDataTransferServiceCombine: DataTransferService, AFDataTransferServiceCombineProtocol {
     
     private let networkService: AFNetworkServiceCombine
     
     public init(with networkService: AFNetworkServiceCombine) {
         self.networkService = networkService
-    }
-    
-    private func decode<T: Decodable>(data: Data, decoder: ResponseDecoder) throws -> T {
-        do {
-            let result: T = try decoder.decode(data)
-            return result
-        } catch {
-            print(error)
-            throw DataTransferError.parsing(error)
-        }
-    }
-    
-    private func encode<E: Encodable>(_ value: E, encoder: DataEncoder) throws -> Data {
-        return try encoder.encode(value)
     }
     
     public func request<T, E>(_ endpoint: E) -> AnyPublisher<T, DataTransferError>

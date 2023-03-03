@@ -9,26 +9,12 @@ import Foundation
 import Alamofire
 import NetworkInterface
 
-public final class AFDataTransferService: AFDataTransferServiceProtocol {
+public final class AFDataTransferService: DataTransferService, AFDataTransferServiceProtocol {
     
     private let networkService: AFNetworkService
     
     public init(with networkService: AFNetworkService) {
         self.networkService = networkService
-    }
-    
-    private func decode<T: Decodable>(data: Data, decoder: ResponseDecoder) throws -> T {
-        do {
-            let result: T = try decoder.decode(data)
-            return result
-        } catch {
-            print(error)
-            throw DataTransferError.parsing(error)
-        }
-    }
-    
-    private func encode<E: Encodable>(_ value: E, encoder: DataEncoder) throws -> Data {
-        return try encoder.encode(value)
     }
     
     public func request<T: Decodable, E: ResponseRequestable>(_ endpoint: E) async throws -> T {
