@@ -14,7 +14,6 @@ import Alamofire
 public final class CheckCombineDataSource {
     
     private let dataTransferService: AFDataTransferServiceCombine
-    private var bag = Set<AnyCancellable>()
     
     public init(dataTransferService: AFDataTransferServiceCombine) {
         self.dataTransferService = dataTransferService
