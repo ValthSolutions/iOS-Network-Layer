@@ -16,6 +16,14 @@ public protocol AFDataTransferServiceCombineProtocol {
     func upload(multipartFormData: @escaping (MultipartFormData) -> Void, to url: URL) -> AnyPublisher<Progress, Error>
 }
 
+public protocol AFDataTransferServiceProtocol {
+    func request<T: Decodable, E: ResponseRequestable>(_ endpoint: E) async throws -> T
+    func download<T: Decodable, E: ResponseRequestable>(_ endpoint: E) async throws -> T
+    func upload(_ value: String, url: URL) async throws -> Progress
+    func upload(multipartFormData: @escaping (MultipartFormData) -> Void,
+                       to url: URL) async throws -> Progress
+}
+
 public enum DataTransferError: Error {
   case noResponse
   case parsing(Error)
