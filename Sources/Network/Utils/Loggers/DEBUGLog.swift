@@ -1,20 +1,24 @@
 import Alamofire
 import Foundation
-
-public protocol Log {
-    
-    func log<T>(_ response: DataResponse<T, AFError>)
-    func success<T>(_ value: T)
-    func failure(_ error: Error)
-    func log(_ response:  DownloadResponsePublisher<Data>.Output)
-}
+import NetworkInterface
 
 public struct DEBUGLog: Log {
     
     let separator = " "
     let empty = "----"
     
-    public init(){
+    public init() {}
+    
+    public func log<T>(_ response: AFDataResponse<T?>) {
+        print("DESCRIPTION ")
+        divider()
+        methodName(response.request?.httpMethod)
+        urlPath(response.request?.url?.absoluteString)
+        header(response.request?.allHTTPHeaderFields)
+        parameters(response.request?.httpBody)
+        statusCode(response.response?.statusCode)
+        metrics(response.metrics)
+        jsonResponse(response.data)
     }
     
     public func log<T, E>(_ response: DataResponse<T, E>) {
@@ -139,7 +143,7 @@ extension Data {
         guard let object = try? JSONSerialization.jsonObject(with: self, options: []),
               let data = try? JSONSerialization.data(withJSONObject: object, options: [.prettyPrinted]),
               let prettyPrintedString = NSString(data: data, encoding: String.Encoding.utf8.rawValue) else { return nil }
-
+        
         return prettyPrintedString
     }
 }

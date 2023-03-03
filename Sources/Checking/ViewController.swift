@@ -20,7 +20,6 @@ class ViewController: UIViewController {
     }()
     
     let session = AFSessionManager.default
-    
     private var bag = Set<AnyCancellable>()
     
     override func viewDidLoad() {
@@ -36,7 +35,7 @@ class ViewController: UIViewController {
             .sink { complition in
                 print(complition)
             } receiveValue: { check in
-                print(check)
+//                print(check)
             }.store(in: &bag)
         
         dataSource.checkList()
@@ -44,7 +43,7 @@ class ViewController: UIViewController {
             .sink { complition in
                 print(complition)
             } receiveValue: { check in
-                print(check)
+               // print(check)
             }.store(in: &bag)
         
         dataSource.checkDownload()
@@ -61,8 +60,13 @@ class ViewController: UIViewController {
         
         dataSource.checkUpload()
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { error in
-                print(error)
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case let .failure(error):
+                    print(error)
+                case .finished:
+                    break
+                }
                 
             }) { result in
                 print(result)
