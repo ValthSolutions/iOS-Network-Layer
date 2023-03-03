@@ -21,13 +21,12 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/Alamofire/Alamofire.git", .upToNextMajor(from: "5.6.1")),
-        .package(url: "https://github.com/tristanhimmelman/ObjectMapper.git", .upToNextMajor(from: "4.1.0")),
     ],
     targets: [
         .target(
             name: "Checking",
             dependencies: [
-            "NetworkInterface", "Network", "ObjectMapper"
+            "NetworkInterface", "Network"
             ]),
         .target(
             name: "NetworkInterface",
@@ -40,7 +39,6 @@ let package = Package(
             dependencies: [
                 "NetworkInterface",
                 .product(name: "Alamofire", package: "Alamofire"),
-                .product(name: "ObjectMapper", package: "ObjectMapper"),
             ]
         ),
      
