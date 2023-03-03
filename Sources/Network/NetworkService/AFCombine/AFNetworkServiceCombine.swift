@@ -5,17 +5,21 @@ import Combine
 
 open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
     
-    public let session: Session
+    private let session: Session
     private let logger: Log
+    private let configuration: NetworkConfigurable
     
-    public init(session: Session, logger: Log = DEBUGLog()) {
+    public init(session: Session,
+                logger: Log = DEBUGLog(),
+                configuration: NetworkConfigurable) {
         self.session = session
         self.logger = logger
+        self.configuration = configuration
     }
  
     public func request(endpoint: Requestable) -> AnyPublisher<Data, Error>  {
         do {
-            let urlRequest = try endpoint.asURLRequest()
+            let urlRequest = try endpoint.asURLRequest(config: configuration)
             return session
                 .request(urlRequest)
                 .publishData()
@@ -38,9 +42,9 @@ open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
     
     public func download(endpoint: Requestable) -> AnyPublisher<Data, Error> {
         do {
-            let url = try endpoint.asURLRequest()
+            let urlRequest = try endpoint.asURLRequest(config: configuration)
             return session
-                .download(url)
+                .download(urlRequest)
                 .publishData()
                 .tryMap { response -> Data in
                     self.logger.log(response)

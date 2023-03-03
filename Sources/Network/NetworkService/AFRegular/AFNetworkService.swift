@@ -5,25 +5,29 @@ import NetworkInterface
 
 open class AFNetworkService: AFNetworkServiceProtocol {
     
-    public let session: Session
+    private let session: Session
     private let logger: Log
+    private let configuration: NetworkConfigurable
     
-    public init(session: Session, logger: Log = DEBUGLog()) {
+    public init(session: Session,
+                logger: Log = DEBUGLog(),
+                configuration: NetworkConfigurable) {
         self.session = session
         self.logger = logger
+        self.configuration = configuration
     }
 
     public func request(endpoint: Requestable) async throws -> Data {
-        let urlRequest = try endpoint.asURLRequest()
+        let urlRequest = try endpoint.asURLRequest(config: configuration)
         let response = session.request(urlRequest).serializingData()
         await logger.log(response.response)
         return try await response.value
     }
     
     public func download(endpoint: Requestable) async throws -> Data {
-        let url = try endpoint.asURLRequest()
-        let response = session.download(url).serializingData()
-//        await logger.log(response.response)
+        let urlRequest = try endpoint.asURLRequest(config: configuration)
+        let response = session.download(urlRequest).serializingData()
+        await logger.log(response.response)
         return try await response.value
     }
     
@@ -37,7 +41,6 @@ open class AFNetworkService: AFNetworkServiceProtocol {
                 case .success:
                     break
                 case .failure(let error):
-                    self.logger.failure(error)
                     continuation.resume(throwing: error)
                 }
             }
@@ -55,7 +58,6 @@ open class AFNetworkService: AFNetworkServiceProtocol {
                 case .success:
                     break
                 case .failure(let error):
-                    self.logger.failure(error)
                     continuation.resume(throwing: error)
                 }
             }

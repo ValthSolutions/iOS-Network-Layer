@@ -8,7 +8,7 @@
 import Foundation
 import NetworkInterface
 
-public struct ApiDataNetworkConfig: NetworkConfigurable {
+public struct APIConfiguration: NetworkConfigurable {
 
   public let baseURL: URL
   public let headers: [String: String]

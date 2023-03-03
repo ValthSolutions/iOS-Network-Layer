@@ -11,77 +11,78 @@ import Network
 import Combine
 import NetworkInterface
 
-private var bag = Set<AnyCancellable>()
-
-
 class ViewController: UIViewController {
-
-    deinit {
-        print("ASGFSAF")
-    }
+    
+    let configuration: APIConfiguration = {
+        let config = APIConfiguration(baseURL: URL(string: "https://api.themoviedb.org/")!,
+                                      queryParameters: ["api_key": "a5ac3411803536cfb4b1cd90557dc8a7"])
+        return config
+    }()
+    
+    let session = AFSessionManager.default
+    
+    private var bag = Set<AnyCancellable>()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        let networkService = AFNetworkServiceCombine(session: session,
+                                                     configuration: configuration)
+        let dataService = AFDataTransferServiceCombine(with: networkService)
+        let dataSource = CheckDataSource(dataTransferService: dataService)
         
-        let session = AFSessionManager.default { token in
-            token["bearer"] = "1jbdi1df"
-        }
-        let networkService: AFNetworkServiceCombine = {
-            return AFNetworkServiceCombine(session: session)
-        }()
-        let service = AFDataTransferServiceCombine(with: networkService)
+        dataSource.checkKeyPaths()
+            .receive(on: DispatchQueue.main)
+            .sink { complition in
+                print(complition)
+            } receiveValue: { check in
+                print(check)
+            }.store(in: &bag)
         
+        dataSource.checkList()
+            .receive(on: DispatchQueue.main)
+            .sink { complition in
+                print(complition)
+            } receiveValue: { check in
+                print(check)
+            }.store(in: &bag)
         
-        let dataSource = CheckDataSource(dataTransferService: service)
-        let repo = CheckRepository(remoteDataSource: dataSource)
-        let useCase = CheckUseCase(checkRepository: repo)
-        
-        func testKeypath() {
-            dataSource.checkKeyPaths()
-                .receive(on: DispatchQueue.main)
-                .sink { complition in
-                    print(complition)
-                } receiveValue: { check in
-                    print(check)
-                }.store(in: &bag)
-
-        }
-        testKeypath()
-        
-        func testRequest() {
-            dataSource.checkList()
-                .receive(on: DispatchQueue.main)
-                .sink { complition in
-                    print(complition)
-                } receiveValue: { check in
-                    print(check)
-                }.store(in: &bag)
-
-        }
-        testRequest()
-        
-        func testDownload(useCase: CheckUseCase) {
-            useCase.executeDownload().receive(on: DispatchQueue.main).sink(receiveCompletion: { completion in
+        dataSource.checkDownload()
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { completion in
                 switch completion {
                 case let .failure(error):
                     print(error)
                 case .finished:
                     break
                 }
-            },
-            receiveValue: { checks in
-
-            })
+            },receiveValue: { _ in  })
             .store(in: &bag)
-        }
         
-        testDownload(useCase: useCase)
         dataSource.checkUpload()
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { _ in }) { result in
+            .sink(receiveCompletion: { error in
+                print(error)
+                
+            }) { result in
                 print(result)
-            }
+            }.store(in: &bag)
+        
+        dataSource.checkUploadMulti(multipartFormData: { multi in
+            let data = "Hello, world!".data(using: .utf8)!
+            multi.append(data, withName: "check")
+        })
+        .receive(on: DispatchQueue.main)
+        .sink(receiveCompletion: { error in
+            print(error)
+            
+        }) { result in
+            print(result)
+        }.store(in: &bag)
     }
-
+    
+    deinit {
+        print("ASGFSAF")
+    }
 }
 
