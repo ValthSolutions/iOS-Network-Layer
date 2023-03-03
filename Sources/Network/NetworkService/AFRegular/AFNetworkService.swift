@@ -15,12 +15,16 @@ open class AFNetworkService {
 
     public func request(endpoint: Requestable) async throws -> Data {
         let urlRequest = try endpoint.asURLRequest()
-        return try await session.request(urlRequest).serializingData().value
+        let response = session.request(urlRequest).serializingData()
+        await logger.log(response.response)
+        return try await response.value
     }
     
     public func download(endpoint: Requestable) async throws -> Data {
         let url = try endpoint.asURLRequest()
-        return try await session.download(url).serializingData().value
+        let response = session.download(url).serializingData()
+//        await logger.log(response.response)
+        return try await response.value
     }
     
     public func upload(_ data: Data, to url: URL) async throws -> Progress {
