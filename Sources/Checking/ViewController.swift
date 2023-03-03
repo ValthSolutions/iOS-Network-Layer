@@ -24,16 +24,76 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        let networkService = AFNetworkServiceCombine(session: session,
-                                                     configuration: configuration)
-        let dataService = AFDataTransferServiceCombine(with: networkService)
-        let dataSource = CheckDataSource(dataTransferService: dataService)
+        let networkServiceCombine = AFNetworkServiceCombine(session: session,
+                                                            configuration: configuration)
+        let dataServiceCombine = AFDataTransferServiceCombine(with: networkServiceCombine)
+        let dataSourceCombine = CheckCombineDataSource(dataTransferService: dataServiceCombine)
         
-        checkCombine(dataSource: dataSource)
+        let networkServiceAsync = AFNetworkService(session: session,
+                                                   configuration: configuration)
+        let dataServiceAsync = AFDataTransferService(with: networkServiceAsync)
+        let dataSourceAsync = CheckAsyncDataSource(dataTransferService: dataServiceAsync)
+        
+        checkCombine(dataSourceCombine: dataSourceCombine)
+        checkAsync(dataSourceAsync: dataSourceAsync)
     }
     
-    func checkCombine(dataSource: CheckDataSource) {
-        dataSource.checkKeyPaths()
+    deinit {
+        print("ASGFSAF")
+    }
+}
+
+extension ViewController{
+    
+    func checkAsync(dataSourceAsync: CheckAsyncDataSource) {
+        Task {
+            do {
+                let checkList = try await dataSourceAsync.checkList()
+                print(checkList)
+            } catch {
+                print(error)
+            }
+        }
+        Task {
+            do {
+                let movies = try await dataSourceAsync.checkKeyPaths()
+                print(movies)
+            } catch {
+                print(error)
+            }
+        }
+        Task {
+            do {
+                let progress = try await dataSourceAsync.checkUpload()
+                print(progress)
+            } catch {
+                print(error)
+            }
+        }
+        Task {
+            do {
+                let url = URL(string: "https://google.com")!
+                let result = try await dataSourceAsync.checkUploadMulti { multi in
+                    let data = "Hello, world!".data(using: .utf8)!
+                    multi.append(data, withName: "check")
+                }
+                print(result)
+            } catch {
+                print(error)
+            }
+        }
+        Task {
+            do {
+                let downloadResult = try await dataSourceAsync.checkDownload()
+                print(downloadResult)
+            } catch {
+                print(error)
+            }
+        }
+    }
+    
+    func checkCombine(dataSourceCombine: CheckCombineDataSource) {
+        dataSourceCombine.checkKeyPaths()
             .receive(on: DispatchQueue.main)
             .sink { complition in
                 print(complition)
@@ -41,7 +101,7 @@ class ViewController: UIViewController {
                 print(check)
             }.store(in: &bag)
         
-        dataSource.checkList()
+        dataSourceCombine.checkList()
             .receive(on: DispatchQueue.main)
             .sink { complition in
                 print(complition)
@@ -49,7 +109,7 @@ class ViewController: UIViewController {
                 print(check)
             }.store(in: &bag)
         
-        dataSource.checkDownload()
+        dataSourceCombine.checkDownload()
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { completion in
                 switch completion {
@@ -61,7 +121,7 @@ class ViewController: UIViewController {
             },receiveValue: { _ in  })
             .store(in: &bag)
         
-        dataSource.checkUpload()
+        dataSourceCombine.checkUpload()
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { completion in
                 switch completion {
@@ -75,7 +135,7 @@ class ViewController: UIViewController {
                 print(result)
             }.store(in: &bag)
         
-        dataSource.checkUploadMulti(multipartFormData: { multi in
+        dataSourceCombine.checkUploadMulti(multipartFormData: { multi in
             let data = "Hello, world!".data(using: .utf8)!
             multi.append(data, withName: "check")
         })
@@ -86,10 +146,6 @@ class ViewController: UIViewController {
         }) { result in
             print(result)
         }.store(in: &bag)
-    }
-    
-    deinit {
-        print("ASGFSAF")
     }
 }
 

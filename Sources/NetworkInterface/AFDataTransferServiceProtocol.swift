@@ -17,7 +17,7 @@ public protocol AFDataTransferServiceCombineProtocol {
 }
 
 public protocol AFDataTransferServiceProtocol {
-    func request<T: Decodable, E: ResponseRequestable>(_ endpoint: E) async throws -> T
+    func request<T, E>(_ endpoint: E) async throws -> T where T: Decodable, T == E.Response, E: ResponseRequestable 
     func download<T: Decodable, E: ResponseRequestable>(_ endpoint: E) async throws -> T
     func upload(_ value: String, url: URL) async throws -> Progress
     func upload(multipartFormData: @escaping (MultipartFormData) -> Void,

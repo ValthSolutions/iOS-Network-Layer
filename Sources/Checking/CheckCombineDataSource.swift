@@ -5,13 +5,13 @@
 //  Created by LEMIN DAHOVICH on 28.02.2023.
 //
 
-import UIKit
+import Foundation
 import Combine
 import Network
 import NetworkInterface
 import Alamofire
 
-public final class CheckDataSource {
+public final class CheckCombineDataSource {
     
     private let dataTransferService: AFDataTransferServiceCombine
     private var bag = Set<AnyCancellable>()
@@ -19,7 +19,7 @@ public final class CheckDataSource {
     public init(dataTransferService: AFDataTransferServiceCombine) {
         self.dataTransferService = dataTransferService
     }
-    //MARK: - Check reactive approach
+
     public func checkList() -> AnyPublisher<CheckListDTO, DataTransferError> {
         let endpoint = Endpoint<CheckListDTO>(
             path: "3/genre/movie/list",
@@ -46,7 +46,6 @@ public final class CheckDataSource {
         return dataTransferService.upload(multipartFormData: multipartFormData, to: url)
     }
     
-    //MARK: - KeyPaths
     public func checkKeyPaths() -> AnyPublisher<[Movie2DTO], DataTransferError> {
         let endpoint = Endpoint<[Movie2DTO]>(
             path: "3/movie/popular",
@@ -55,5 +54,4 @@ public final class CheckDataSource {
             keyPath: "results")
         return dataTransferService.download(endpoint)
     }
-
 }

@@ -17,7 +17,7 @@ public final class AFDataTransferService: DataTransferService, AFDataTransferSer
         self.networkService = networkService
     }
     
-    public func request<T: Decodable, E: ResponseRequestable>(_ endpoint: E) async throws -> T {
+    public func request<T, E>(_ endpoint: E) async throws -> T where T: Decodable, T == E.Response, E: ResponseRequestable {
         let responseData = try await networkService.request(endpoint: endpoint)
         do {
             let decodedData: T = try decode(data: responseData, decoder: endpoint.responseDecoder)
