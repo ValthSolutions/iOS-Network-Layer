@@ -72,7 +72,6 @@ extension ViewController{
         }
         Task {
             do {
-                let url = URL(string: "https://google.com")!
                 let result = try await dataSourceAsync.checkUploadMulti { multi in
                     let data = "Hello, world!".data(using: .utf8)!
                     multi.append(data, withName: "check")
