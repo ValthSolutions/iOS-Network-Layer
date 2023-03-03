@@ -24,12 +24,15 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         let networkService = AFNetworkServiceCombine(session: session,
                                                      configuration: configuration)
         let dataService = AFDataTransferServiceCombine(with: networkService)
         let dataSource = CheckDataSource(dataTransferService: dataService)
         
+        checkCombine(dataSource: dataSource)
+    }
+    
+    func checkCombine(dataSource: CheckDataSource) {
         dataSource.checkKeyPaths()
             .receive(on: DispatchQueue.main)
             .sink { complition in
