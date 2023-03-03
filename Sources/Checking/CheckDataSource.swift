@@ -37,9 +37,9 @@ public final class CheckDataSource {
                   "api_key": "a5ac3411803536cfb4b1cd90557dc8a7"])
         return dataTransferService.download(endpoint)
     }
-    
-    public func checkKeyPaths() -> AnyPublisher<Movie2DTO, DataTransferError> {
-        let endpoint = Endpoint<Movie2DTO>(
+    //MARK: - KeyPaths
+    public func checkKeyPaths() -> AnyPublisher<[Movie2DTO], DataTransferError> {
+        let endpoint = Endpoint<[Movie2DTO]>(
             path: "https://api.themoviedb.org/3/movie/popular",
             method: .get,
             queryParameters:
