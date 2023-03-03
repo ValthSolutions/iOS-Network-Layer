@@ -25,7 +25,7 @@ public struct CheckDTO: Decodable {
 /*
 public struct MoviePageDTO: Decodable {
   public let page: Int
-  public let results: [Movie2DTO]
+  public let results: [Movie2DTO]       <- keyPath
   public let totalPages: Int
   public let totalResults: Int
 
