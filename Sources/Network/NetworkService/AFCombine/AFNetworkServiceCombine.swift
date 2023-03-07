@@ -17,7 +17,7 @@ open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
         self.configuration = configuration
     }
     
-    public func request(endpoint: Requestable) -> AnyPublisher<Data, Error>  {
+    open func request(endpoint: Requestable) -> AnyPublisher<Data, Error>  {
         do {
             let urlRequest = try endpoint.asURLRequest(config: configuration)
             return session
@@ -49,7 +49,7 @@ open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
         }
     }
     
-    public func download(endpoint: Requestable) -> AnyPublisher<Data, Error> {
+    open func download(endpoint: Requestable) -> AnyPublisher<Data, Error> {
         do {
             let urlRequest = try endpoint.asURLRequest(config: configuration)
             return session
@@ -75,7 +75,7 @@ open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
         }
     }
     
-    public func upload(_ data: Data, to url: URL) -> AnyPublisher<Progress, Error> {
+    open func upload(_ data: Data, to url: URL) -> AnyPublisher<Progress, Error> {
         Future<Progress, Error> { [weak self] promise in
             self?.session.upload(data, to: url).uploadProgress(closure: { progress in
                 promise(.success(progress))
@@ -95,7 +95,7 @@ open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
         }.eraseToAnyPublisher()
     }
     
-    public func upload(multipartFormData: @escaping (MultipartFormData) -> Void,
+    open func upload(multipartFormData: @escaping (MultipartFormData) -> Void,
                        to url: URL) -> AnyPublisher<Progress, Error> {
         Future<Progress, Error> { [weak self] promise in
             self?.session.upload(multipartFormData: multipartFormData,

@@ -17,7 +17,7 @@ open class AFNetworkService: AFNetworkServiceProtocol {
         self.configuration = configuration
     }
     
-    public func request(endpoint: Requestable) async throws -> Data {
+    open func request(endpoint: Requestable) async throws -> Data {
         let urlRequest = try endpoint.asURLRequest(config: configuration)
         let response = session.request(urlRequest).serializingData()
         await logger.log(response.response, endpoint)
@@ -38,7 +38,7 @@ open class AFNetworkService: AFNetworkServiceProtocol {
         }
     }
     
-    public func download(endpoint: Requestable) async throws -> Data {
+    open func download(endpoint: Requestable) async throws -> Data {
         let urlRequest = try endpoint.asURLRequest(config: configuration)
         let response = session.download(urlRequest).serializingData()
         await logger.log(response.response, endpoint)
@@ -59,7 +59,7 @@ open class AFNetworkService: AFNetworkServiceProtocol {
         }
     }
     
-    public func upload(_ data: Data, to url: URL) async throws -> Progress {
+    open func upload(_ data: Data, to url: URL) async throws -> Progress {
         return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Progress, Error>) in
             self.session.upload(data, to: url).uploadProgress(closure: { progress in
                 continuation.resume(returning: progress)
@@ -81,7 +81,7 @@ open class AFNetworkService: AFNetworkServiceProtocol {
         }
     }
     
-    public func upload(multipartFormData: @escaping (MultipartFormData) -> Void,
+    open func upload(multipartFormData: @escaping (MultipartFormData) -> Void,
                        to url: URL) async throws -> Progress {
         return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Progress, Error>) in
             self.session.upload(multipartFormData: multipartFormData, to: url).uploadProgress(closure: { progress in
@@ -89,18 +89,7 @@ open class AFNetworkService: AFNetworkServiceProtocol {
             }).response { response in
                 switch response.result {
                 case .success(_):
-                    if let error = response.error {
-                        switch true {
-                        case error.isExplicitlyCancelledError:
-                            continuation.resume(throwing: NetworkError.cancelled)
-                        case error.isSessionTaskError || error.isResponseValidationError:
-                            continuation.resume(throwing: NetworkError.generic(error))
-                        default:
-                            let statusCode = response.response?.statusCode ?? -1
-                            let data = response.data ?? Data()
-                            continuation.resume(throwing: NetworkError.error(statusCode: statusCode, data: data))
-                        }
-                    }
+                    break
                 case .failure(let error):
                     switch true {
                     case error.isExplicitlyCancelledError:
