@@ -8,7 +8,7 @@
 import Foundation
 import NetworkInterface
 
-public class JSONResponseDecoder: ResponseDecoder {
+open class JSONResponseDecoder: ResponseDecoder {
     
     private let jsonDecoder = JSONDecoder()
     private let keyPathDecoder: KeyPathDecoder?

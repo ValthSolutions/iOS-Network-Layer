@@ -8,7 +8,7 @@
 import Foundation
 import NetworkInterface
 
-public class JSONEncoderData: DataEncoder {
+open class JSONEncoderData: DataEncoder {
     
     private let jsonEncoder = JSONEncoder()
 

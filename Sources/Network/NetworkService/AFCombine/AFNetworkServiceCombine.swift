@@ -6,11 +6,11 @@ import Combine
 open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
     
     private let session: Session
-    private let logger: Log
+    private let logger: Loger
     private let configuration: NetworkConfigurable
     
     public init(session: Session,
-                logger: Log = DEBUGLog(),
+                logger: Loger = DEBUGLog(),
                 configuration: NetworkConfigurable) {
         self.session = session
         self.logger = logger

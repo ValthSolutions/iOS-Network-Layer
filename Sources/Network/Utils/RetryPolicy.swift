@@ -5,11 +5,10 @@
 //  Created by LEMIN DAHOVICH on 28.02.2023.
 //
 
-import Foundation
 import Alamofire
 import Foundation
 
-class RetryPolicy: RequestRetrier {
+open class RetryPolicy: RequestRetrier {
     private let maxRetryCount: Int
     
     init(maxRetryCount: Int) {

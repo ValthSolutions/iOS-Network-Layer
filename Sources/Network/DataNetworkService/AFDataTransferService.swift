@@ -9,7 +9,7 @@ import Foundation
 import Alamofire
 import NetworkInterface
 
-public final class AFDataTransferService: DataTransferService, AFDataTransferServiceProtocol {
+open class AFDataTransferService: DataTransferService, AFDataTransferServiceProtocol {
     
     private let networkService: AFNetworkService
     

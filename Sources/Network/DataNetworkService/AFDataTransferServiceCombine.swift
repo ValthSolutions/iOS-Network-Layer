@@ -10,7 +10,7 @@ import Alamofire
 import Combine
 import NetworkInterface
 
-public final class AFDataTransferServiceCombine: DataTransferService, AFDataTransferServiceCombineProtocol {
+open class AFDataTransferServiceCombine: DataTransferService, AFDataTransferServiceCombineProtocol {
     
     private let networkService: AFNetworkServiceCombine
     

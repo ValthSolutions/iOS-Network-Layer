@@ -4,10 +4,11 @@
 import PackageDescription
 
 let package = Package(
-    name: "iOS-Network-Layer",
+    name: "Network-Layer",
     platforms: [
         .iOS(.v16)
     ],
+    
     products: [
         .library(
             name: "NetworkInterface",
@@ -16,15 +17,17 @@ let package = Package(
             name: "Network",
             targets: ["Network"]),
         .library(
-            name: "iOS_Demo",
-            targets: ["iOS_Demo"]),
+            name: "Sample",
+            targets: ["Sample"]),
     ],
+    
     dependencies: [
         .package(url: "https://github.com/Alamofire/Alamofire.git", .upToNextMajor(from: "5.6.1")),
     ],
+    
     targets: [
         .target(
-            name: "iOS_Demo",
+            name: "Sample",
             dependencies: [
             "NetworkInterface", "Network"
             ]),
@@ -32,7 +35,6 @@ let package = Package(
             name: "NetworkInterface",
             dependencies: [
                 .product(name: "Alamofire", package: "Alamofire"),
-
             ]),
         .target(
             name: "Network",

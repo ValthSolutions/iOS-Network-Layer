@@ -8,7 +8,7 @@
 import Foundation
 import NetworkInterface
 
-public class DataTransferService {
+open class DataTransferService {
     
     func decode<T: Decodable>(data: Data, decoder: ResponseDecoder) throws -> T {
         do {

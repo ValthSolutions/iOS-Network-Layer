@@ -8,7 +8,7 @@
 import Alamofire
 import Foundation
 
-public class TokenAdapter: RequestAdapter {
+open class TokenAdapter: RequestAdapter {
     private let setToken: (inout [String: String]) -> Void
     
     public init(setToken: ((inout [String: String]) -> Void)?) {

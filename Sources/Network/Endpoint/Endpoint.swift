@@ -9,7 +9,7 @@ import Foundation
 import NetworkInterface
 import Alamofire
 
-public class Endpoint<R>: ResponseRequestable {
+open class Endpoint<R>: ResponseRequestable {
     public typealias Response = R
     
     public var path: String

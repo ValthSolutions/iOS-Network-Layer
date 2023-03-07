@@ -8,7 +8,7 @@
 import Foundation
 import Alamofire
 
-public class Interceptor: RequestInterceptor {
+open class Interceptor: RequestInterceptor {
     private var adapter: RequestAdapter
     
     public  init(adapter: RequestAdapter) {

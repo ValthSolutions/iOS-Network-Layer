@@ -2,7 +2,7 @@ import Alamofire
 import Foundation
 import NetworkInterface
 
-public struct DEBUGLog: Log {
+public struct DEBUGLog: Loger {
     
     private let separator = " "
     private let empty = "----"

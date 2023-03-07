@@ -3,7 +3,7 @@ import Alamofire
 import Foundation
 import NetworkInterface
 
-public class AFSessionManager: Session {
+open class AFSessionManager: Session {
     
     public static func `default`(setToken: ((inout [String: String]) -> Void)?) -> AFSessionManager {
         var interceptor: Interceptor?
