@@ -6,7 +6,7 @@
 //
 
 import UIKit
-import iOS_Demo
+import Sample
 import Network
 import Combine
 import NetworkInterface
