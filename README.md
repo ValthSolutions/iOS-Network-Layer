@@ -86,7 +86,7 @@ upload(multipartFormData: @escaping (MultipartFormData) -> Void, to url: URL) as
 ```
 - uploads the multipart form data to the specified URL. This method is marked as async and throws and it may throw a DataTransferError.resolvedNetworkFailure error if the network operation fails. The multipart form data is provided by the closure parameter of type @escaping (MultipartFormData) -> Void.
 
-### AFNetworkServiceCombine&AFNetworkService:
+### AFNetworkServiceCombine & AFNetworkService:
 1. The NetworkConfigurable protocol is used to define a set of properties that need to be configured before making network requests. This protocol includes three properties: baseURL, headers, and queryParameters.
 2. The APIConfiguration struct is a concrete implementation of NetworkConfigurable and provides a way to pass configuration values to AFNetworkServiceCombine and Session. It includes the three required properties: baseURL, headers, and queryParameters.
 3. baseURL is the root URL for all network requests made using AFNetworkServiceCombine and Session. This is important because it helps ensure that all requests are being made to the correct endpoint.
@@ -119,7 +119,7 @@ open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
 }
 ```
 
-# Examplinatory using
+# Examplinatory usage
 
 Init AFNetworkServiceCombine:
 
@@ -149,7 +149,7 @@ Init AFNetworkService:
         return dataTransferService.request(endpoint)
     }
 ```
-execution of DataSource #1:
+execution of DataSource:
 ```swift
         dataSourceCombine.checkList()
             .receive(on: DispatchQueue.main)
@@ -169,7 +169,7 @@ execution of DataSource #1:
         return try await dataTransferService.request(endpoint)
     }
 ```
-execution of DataSource #2:
+execution of DataSource:
 ```swift
         Task {
             do {
