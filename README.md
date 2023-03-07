@@ -54,11 +54,11 @@ This method takes in an instance of type E that conforms to the Encodable protoc
 ```swift
 request<T, E>(_ endpoint: E) -> AnyPublisher<T, DataTransferError>
 ```
-This method takes in an endpoint conforming to ResponseRequestable protocol, performs a network request using Alamofire, and returns a publisher that emits the response object of type T or an error of type DataTransferError.
+This method takes in an endpoint conforming to ResponseRequestable protocol, performs a network request using AFNetworkServiceCombine, and returns a publisher that emits the response object of type T or an error of type DataTransferError.
 ```swift
 download<T, E>(_ endpoint: E) -> AnyPublisher<T, DataTransferError>
 ```
-This method takes in an endpoint conforming to ResponseRequestable protocol, performs a network download request using Alamofire, and returns a publisher that emits the response object of type T or an error of type DataTransferError.
+This method takes in an endpoint conforming to ResponseRequestable protocol, performs a network download request using AFNetworkServiceCombine, and returns a publisher that emits the response object of type T or an error of type DataTransferError.
 ```swift
 upload(_ value: String, url: URL) -> AnyPublisher<Progress, DataTransferError>
 ```
