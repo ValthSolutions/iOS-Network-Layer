@@ -13,7 +13,7 @@ import NetworkInterface
 
 class ViewController: UIViewController {
     
-    let configuration: APIConfiguration = {
+    let configuration: NetworkConfigurable = {
         let config = APIConfiguration(baseURL: URL(string: "https://api.themoviedb.org/")!,
                                       queryParameters: ["api_key": "a5ac3411803536cfb4b1cd90557dc8a7"])
         return config

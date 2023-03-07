@@ -94,7 +94,7 @@ upload(multipartFormData: @escaping (MultipartFormData) -> Void, to url: URL) as
 5. queryParameters is another dictionary that includes additional information that needs to be sent with each network request as query parameters. These parameters are added to the end of the request URL as a key-value pair.
 6. Passing configuration values through APIConfiguration ensures that these values are consistent across all network requests made using AFNetworkServiceCombine&AFNetworkService and Session. It also makes it easier to modify these values in one place instead of having to modify them separately for each request.
 ```swift
-    let configuration: APIConfiguration = {
+    let configuration: NetworkConfigurable = {
         let config = APIConfiguration(baseURL: URL(string: "https://example.com/")!,
                                       queryParameters: ["api_key": "gjk235g32538d92"])
         return config
