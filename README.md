@@ -19,18 +19,23 @@ Both AFDataTransferServiceCombine and AFDataTransferService are built on top of 
 
 Sample: 
 ```swift
+    func checkKeyPaths() -> AnyPublisher<[Movie2DTO], DataTransferError> {
         let endpoint = Endpoint<[Movie2DTO]>(
             path: "3/movie/popular",
             method: .get,
             queryParameters: ["language": "en"],
             keyPath: "results")
         return dataTransferService.download(endpoint)            
-            
+    }  
+```
+```swift     
+    func checkList() async throws -> CheckListDTO {
         let endpoint = Endpoint<CheckListDTO>(
             path: "3/genre/movie/list",
             method: .get, 
             queryParameters: ["language": "en"])   
-        return dataTransferService.download(endpoint)              
+        return try await dataTransferService.request(endpoint)
+    }     
 ```
 
 # Public Methods
