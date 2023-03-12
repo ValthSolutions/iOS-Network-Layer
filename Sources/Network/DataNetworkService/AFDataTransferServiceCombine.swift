@@ -12,9 +12,9 @@ import NetworkInterface
 
 open class AFDataTransferServiceCombine: DataTransferService, AFDataTransferServiceCombineProtocol {
     
-    private let networkService: AFNetworkServiceCombine
+    private let networkService: AFNetworkServiceCombineProtocol
     
-    public init(with networkService: AFNetworkServiceCombine) {
+    public init(with networkService: AFNetworkServiceCombineProtocol) {
         self.networkService = networkService
     }
     

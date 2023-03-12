@@ -17,8 +17,8 @@ let package = Package(
             name: "Network",
             targets: ["Network"]),
         .library(
-            name: "Sample",
-            targets: ["Sample"]),
+            name: "SampleApp",
+            targets: ["SampleApp"]),
     ],
     
     dependencies: [
@@ -27,7 +27,7 @@ let package = Package(
     
     targets: [
         .target(
-            name: "Sample",
+            name: "SampleApp",
             dependencies: [
             "NetworkInterface", "Network"
             ]),

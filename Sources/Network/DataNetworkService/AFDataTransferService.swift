@@ -11,9 +11,9 @@ import NetworkInterface
 
 open class AFDataTransferService: DataTransferService, AFDataTransferServiceProtocol {
     
-    private let networkService: AFNetworkService
+    private let networkService: AFNetworkServiceProtocol
     
-    public init(with networkService: AFNetworkService) {
+    public init(with networkService: AFNetworkServiceProtocol) {
         self.networkService = networkService
     }
     
