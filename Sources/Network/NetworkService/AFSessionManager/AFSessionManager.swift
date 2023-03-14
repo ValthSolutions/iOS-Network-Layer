@@ -1,16 +1,15 @@
-
 import Alamofire
 import Foundation
 import NetworkInterface
 
 open class AFSessionManager: Session {
     
-    public static func `default`(setToken: ((inout [String: String]) -> Void)?) -> AFSessionManager {
+    public static func `default`(adaptHeaders: ((inout [String: String]) -> Void)?) -> AFSessionManager {
         var interceptor: Interceptor?
-        var adapter: TokenAdapter?
+        var adapter: HeadersAdapter?
         
-        if let setToken = setToken {
-            adapter = TokenAdapter(setToken: setToken)
+        if let adaptHeaders = adaptHeaders {
+            adapter = HeadersAdapter(adaptHeaders: adaptHeaders)
             interceptor = Interceptor(adapter: adapter!)
         }
         

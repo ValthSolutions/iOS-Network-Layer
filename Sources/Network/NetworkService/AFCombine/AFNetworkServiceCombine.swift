@@ -17,7 +17,7 @@ open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
         self.configuration = configuration
     }
     
-    open func request(endpoint: Requestable) -> AnyPublisher<Data, Error>  {
+    open func request(endpoint: Requestable) -> AnyPublisher<Data, Error> {
         do {
             let urlRequest = try endpoint.asURLRequest(config: configuration)
             return session
@@ -29,8 +29,10 @@ open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
                           let statusCode = response.response?.statusCode else {
                         throw AFError.responseSerializationFailed(reason: .inputDataNilOrZeroLength)
                     }
-                    
-                    if (200...299).contains(statusCode) {
+
+                    if let statusCode = response.response?.statusCode,
+                        let networkStatusCode = NetworkStatusCode(rawValue: statusCode),
+                        networkStatusCode.isAcceptable {
                         return data
                     } else {
                         throw NetworkError.error(statusCode: statusCode, data: data)
@@ -109,7 +111,7 @@ open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
             .validate(statusCode: 200..<300)
             .responseData { response in
                 switch response.result {
-                case .success(_):
+                case .success:
                     break
                 case .failure(let error):
                     if error.isExplicitlyCancelledError {

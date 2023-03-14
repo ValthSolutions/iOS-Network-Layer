@@ -41,6 +41,22 @@ public enum NetworkError: Error {
     case unknown
 }
 
+public enum NetworkStatusCode: Int {
+    case success = 200
+    case created = 201
+    case accepted = 202
+    case noContent = 204
+    case resetContent = 205
+    case partialContent = 206
+    case multiStatus = 207
+    case alreadyReported = 208
+    case imUsed = 226
+        
+    public var isAcceptable: Bool {
+        return (200...299).contains(rawValue)
+    }
+}
+
 extension NetworkError {
     public var isNotFoundError: Bool {
         return hasStatusCode(404)

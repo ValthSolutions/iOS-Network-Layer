@@ -33,7 +33,7 @@ public struct DEBUGLog: Loger {
         jsonResponse(response.data)
     }
     
-    public func log(_ response:  DownloadResponsePublisher<Data>.Output,
+    public func log(_ response: DownloadResponsePublisher<Data>.Output,
                     _ config: Requestable? = nil) {
         divider()
         methodName(response.request?.httpMethod)

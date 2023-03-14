@@ -8,18 +8,18 @@
 import Alamofire
 import Foundation
 
-open class TokenAdapter: RequestAdapter {
-    private let setToken: (inout [String: String]) -> Void
+open class HeadersAdapter: RequestAdapter {
+    private let adaptHeaders: (inout [String: String]) -> Void
     
-    public init(setToken: ((inout [String: String]) -> Void)?) {
-        self.setToken = setToken ?? { headers in }
+    public init(adaptHeaders: ((inout [String: String]) -> Void)?) {
+        self.adaptHeaders = adaptHeaders ?? { _ in }
     }
     
     public func adapt(_ urlRequest: URLRequest, for session: Session, completion: @escaping (Result<URLRequest, Error>) -> Void) {
         var urlRequest = urlRequest
         var headers = urlRequest.allHTTPHeaderFields ?? [:]
         
-        setToken(&headers)
+        adaptHeaders(&headers)
         
         urlRequest.allHTTPHeaderFields = headers
         completion(.success(urlRequest))

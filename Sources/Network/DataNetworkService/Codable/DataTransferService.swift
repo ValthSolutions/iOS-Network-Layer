@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import OSLog
 import NetworkInterface
 
 open class DataTransferService {
@@ -15,7 +16,7 @@ open class DataTransferService {
             let result: T = try decoder.decode(data)
             return result
         } catch {
-            print(error)
+            os_log("%s", error.localizedDescription)
             throw DataTransferError.parsing(error)
         }
     }
