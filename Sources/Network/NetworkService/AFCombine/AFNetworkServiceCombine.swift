@@ -85,18 +85,14 @@ open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
                 case .success:
                     break
                 case .failure(let error):
-                    if let afError = error as? AFError {
-                        promise(.failure(afError.underlyingError ?? NetworkError.generic(error)))
-                    } else {
-                        promise(.failure(NetworkError.generic(error)))
-                    }
+                    promise(.failure(error.underlyingError ?? NetworkError.generic(error)))
                 }
             }
         }.eraseToAnyPublisher()
     }
     
     open func upload(multipartFormData: @escaping (MultipartFormData) -> Void,
-                       to url: URL) -> AnyPublisher<Progress, Error> {
+                     to url: URL) -> AnyPublisher<Progress, Error> {
         Future<Progress, Error> { [weak self] promise in
             self?.session.upload(multipartFormData: multipartFormData,
                                  to: url).uploadProgress(closure: { progress in

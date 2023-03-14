@@ -132,7 +132,7 @@ public struct DEBUGLog: Loger {
     }
     
     fileprivate func jsonResponse(_ data: Data?) {
-        if let json = data.flatMap { $0.prettyPrintedJSONString } {
+        if let json = data.flatMap({ $0.prettyPrintedJSONString }) {
             print("📓 JSON:", json)
         } else {
             print("📓 JSON:", empty)

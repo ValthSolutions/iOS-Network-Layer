@@ -69,20 +69,20 @@ open class AFNetworkService: AFNetworkServiceProtocol {
                 case .success:
                     break
                 case .failure(let error):
-                        if let statusCode = error.responseCode {
-                            let data = error.downloadResumeData ?? Data()
-                            let networkError = NetworkError.error(statusCode: statusCode, data: data)
-                            continuation.resume(throwing: networkError)
-                        } else {
-                            continuation.resume(throwing: NetworkError.generic(error))
-                        }
+                    if let statusCode = error.responseCode {
+                        let data = error.downloadResumeData ?? Data()
+                        let networkError = NetworkError.error(statusCode: statusCode, data: data)
+                        continuation.resume(throwing: networkError)
+                    } else {
+                        continuation.resume(throwing: NetworkError.generic(error))
+                    }
                 }
             }
         }
     }
     
     open func upload(multipartFormData: @escaping (MultipartFormData) -> Void,
-                       to url: URL) async throws -> Progress {
+                     to url: URL) async throws -> Progress {
         return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Progress, Error>) in
             self.session.upload(multipartFormData: multipartFormData, to: url).uploadProgress(closure: { progress in
                 continuation.resume(returning: progress)

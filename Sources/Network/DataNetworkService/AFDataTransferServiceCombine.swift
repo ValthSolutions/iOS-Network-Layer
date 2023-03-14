@@ -30,8 +30,8 @@ open class AFDataTransferServiceCombine: DataTransferService, AFDataTransferServ
                 case AFError.responseValidationFailed(reason: .unacceptableStatusCode(code: let statusCode)):
                     return .networkFailure(.unacceptableStatusCode(statusCode: statusCode))
                 case AFError.sessionDeinitialized,
-                     AFError.explicitlyCancelled,
-                     AFError.responseSerializationFailed(reason: _):
+                    AFError.explicitlyCancelled,
+                    AFError.responseSerializationFailed(reason: _):
                     return .resolvedNetworkFailure(error)
                 default:
                     return .networkFailure(.unknown)
@@ -52,8 +52,8 @@ open class AFDataTransferServiceCombine: DataTransferService, AFDataTransferServ
                 case AFError.responseValidationFailed(reason: .unacceptableStatusCode(code: let statusCode)):
                     return .networkFailure(.unacceptableStatusCode(statusCode: statusCode))
                 case AFError.sessionDeinitialized,
-                     AFError.explicitlyCancelled,
-                     AFError.responseSerializationFailed(reason: _):
+                    AFError.explicitlyCancelled,
+                    AFError.responseSerializationFailed(reason: _):
                     return .resolvedNetworkFailure(error)
                 default:
                     return .networkFailure(.unknown)
@@ -68,7 +68,7 @@ open class AFDataTransferServiceCombine: DataTransferService, AFDataTransferServ
             .mapError { error -> DataTransferError in
                 switch error {
                 case AFError.sessionDeinitialized,
-                     AFError.explicitlyCancelled:
+                    AFError.explicitlyCancelled:
                     return .resolvedNetworkFailure(error)
                 default:
                     return .networkFailure(.unknown)
@@ -78,12 +78,12 @@ open class AFDataTransferServiceCombine: DataTransferService, AFDataTransferServ
     }
     
     open func upload(multipartFormData: @escaping (MultipartFormData) -> Void,
-                       to url: URL) -> AnyPublisher<Progress, DataTransferError> {
+                     to url: URL) -> AnyPublisher<Progress, DataTransferError> {
         return networkService.upload(multipartFormData: multipartFormData, to: url)
             .mapError { error -> DataTransferError in
                 switch error {
                 case AFError.sessionDeinitialized,
-                     AFError.explicitlyCancelled:
+                    AFError.explicitlyCancelled:
                     return .resolvedNetworkFailure(error)
                 default:
                     return .networkFailure(.unknown)

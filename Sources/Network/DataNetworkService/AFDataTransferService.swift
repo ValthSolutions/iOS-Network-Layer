@@ -46,9 +46,9 @@ open class AFDataTransferService: DataTransferService, AFDataTransferServiceProt
             throw DataTransferError.resolvedNetworkFailure(error)
         }
     }
-
+    
     open func upload(multipartFormData: @escaping (MultipartFormData) -> Void,
-                       to url: URL) async throws -> Progress {
+                     to url: URL) async throws -> Progress {
         do {
             let progress = try await networkService.upload(multipartFormData: multipartFormData, to: url)
             return progress

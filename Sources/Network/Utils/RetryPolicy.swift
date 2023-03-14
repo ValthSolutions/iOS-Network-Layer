@@ -22,7 +22,7 @@ open class RetryPolicy: RequestRetrier {
             completion(.doNotRetryWithError(error))
             return
         }
-
+        
         completion(.retryWithDelay(1.0))
     }
 }

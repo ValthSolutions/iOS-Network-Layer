@@ -13,6 +13,7 @@ open class AFSessionManager: Session {
             adapter = TokenAdapter(setToken: setToken)
             interceptor = Interceptor(adapter: adapter!)
         }
+        
         let session = AFSessionManager(configuration: URLSessionConfiguration.default, interceptor: interceptor)
         return session
     }

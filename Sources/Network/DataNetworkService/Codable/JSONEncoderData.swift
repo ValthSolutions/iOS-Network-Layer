@@ -11,9 +11,9 @@ import NetworkInterface
 open class JSONEncoderData: DataEncoder {
     
     private let jsonEncoder = JSONEncoder()
-
+    
     public init() { }
-
+    
     public func encode<T: Encodable>(_ data: T) throws -> Data {
         return try jsonEncoder.encode(data)
     }
