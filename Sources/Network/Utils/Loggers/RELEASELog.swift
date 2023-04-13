@@ -10,6 +10,9 @@ import Alamofire
 import NetworkInterface
 
 public struct RELEASELog: Loger {
+    
+    public init() {}
+    
     public func log<T>(_ response: Alamofire.AFDataResponse<T?>, _ config: NetworkInterface.Requestable?) {}
     
     public func log<T, E>(_ response: Alamofire.DataResponse<T, E>, _ config: NetworkInterface.Requestable?) where E : Error {}
