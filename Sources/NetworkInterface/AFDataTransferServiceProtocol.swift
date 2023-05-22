@@ -28,6 +28,7 @@ public enum DataTransferError: Error {
     case noResponse
     case parsing(Error)
     case networkFailure(NetworkError)
+    case networkAdaptableError(Error)
     case resolvedNetworkFailure(Error)
 }
 
@@ -41,6 +42,13 @@ public enum NetworkError: Error {
     case unknown
 }
 
+public enum AdapterError: Error {
+    case defaultError
+    case generic(String)
+    case decoding(String)
+    case serverErrors(String)
+}
+
 public enum NetworkStatusCode: Int {
     case success = 200
     case created = 201
@@ -51,10 +59,9 @@ public enum NetworkStatusCode: Int {
     case multiStatus = 207
     case alreadyReported = 208
     case imUsed = 226
-    case okay = 400
     
     public var isAcceptable: Bool {
-        return (200...401).contains(rawValue)
+        return (200...299).contains(rawValue)
     }
 }
 

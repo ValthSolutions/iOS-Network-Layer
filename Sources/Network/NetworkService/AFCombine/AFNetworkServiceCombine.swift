@@ -29,10 +29,10 @@ open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
                           let statusCode = response.response?.statusCode else {
                         throw AFError.responseSerializationFailed(reason: .inputDataNilOrZeroLength)
                     }
-
+                    
                     if let statusCode = response.response?.statusCode,
-                        let networkStatusCode = NetworkStatusCode(rawValue: statusCode),
-                        networkStatusCode.isAcceptable {
+                       let networkStatusCode = NetworkStatusCode(rawValue: statusCode),
+                       networkStatusCode.isAcceptable {
                         return data
                     } else {
                         throw NetworkError.error(statusCode: statusCode, data: data)
@@ -41,6 +41,8 @@ open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
                 .mapError { error -> Error in
                     if let afError = error as? AFError {
                         return afError.underlyingError ?? NetworkError.generic(error)
+                    } else if let networkError = error as? NetworkError {
+                        return networkError
                     } else {
                         return NetworkError.generic(error)
                     }
@@ -67,6 +69,8 @@ open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
                 .mapError { error -> Error in
                     if let afError = error as? AFError {
                         return afError.underlyingError ?? NetworkError.generic(error)
+                    } else if let networkError = error as? NetworkError {
+                        return networkError
                     } else {
                         return NetworkError.generic(error)
                     }
@@ -87,7 +91,13 @@ open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
                 case .success:
                     break
                 case .failure(let error):
-                    promise(.failure(error.underlyingError ?? NetworkError.generic(error)))
+                    if (error.underlyingError != nil) {
+                        promise(.failure(error.underlyingError ?? NetworkError.generic(error)))
+                    } else {
+                        let statusCode = response.response?.statusCode ?? -1
+                        let data = response.data ?? Data()
+                        promise(.failure(NetworkError.error(statusCode: statusCode, data: data)))
+                    }
                 }
             }
         }.eraseToAnyPublisher()

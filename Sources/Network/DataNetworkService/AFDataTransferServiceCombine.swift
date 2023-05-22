@@ -13,9 +13,12 @@ import NetworkInterface
 open class AFDataTransferServiceCombine: DataTransferService, AFDataTransferServiceCombineProtocol {
     
     private let networkService: AFNetworkServiceCombineProtocol
+    private let errorAdapter: IErrorAdapter
     
-    public init(with networkService: AFNetworkServiceCombineProtocol) {
+    public init(with networkService: AFNetworkServiceCombineProtocol,
+                errorAdapter: IErrorAdapter) {
         self.networkService = networkService
+        self.errorAdapter = errorAdapter
     }
     
     open func request<T, E>(_ endpoint: E) -> AnyPublisher<T, DataTransferError>
@@ -27,6 +30,9 @@ open class AFDataTransferServiceCombine: DataTransferService, AFDataTransferServ
             }
             .mapError { error -> DataTransferError in
                 switch error {
+                case NetworkError.error(statusCode: _, data: _):
+                    let error = self.errorAdapter.adapt(error)
+                    return .networkAdaptableError(error)
                 case AFError.responseValidationFailed(reason: .unacceptableStatusCode(code: let statusCode)):
                     return .networkFailure(.unacceptableStatusCode(statusCode: statusCode))
                 case AFError.sessionDeinitialized,
@@ -49,6 +55,9 @@ open class AFDataTransferServiceCombine: DataTransferService, AFDataTransferServ
             }
             .mapError { error -> DataTransferError in
                 switch error {
+                case NetworkError.error(statusCode: _, data: _):
+                    let error = self.errorAdapter.adapt(error)
+                    return .networkAdaptableError(error)
                 case AFError.responseValidationFailed(reason: .unacceptableStatusCode(code: let statusCode)):
                     return .networkFailure(.unacceptableStatusCode(statusCode: statusCode))
                 case AFError.sessionDeinitialized,
@@ -67,6 +76,9 @@ open class AFDataTransferServiceCombine: DataTransferService, AFDataTransferServ
         return networkService.upload(encodedData, to: url)
             .mapError { error -> DataTransferError in
                 switch error {
+                case NetworkError.error(statusCode: _, data: _):
+                    let error = self.errorAdapter.adapt(error)
+                    return .networkAdaptableError(error)
                 case AFError.sessionDeinitialized,
                     AFError.explicitlyCancelled:
                     return .resolvedNetworkFailure(error)
@@ -82,6 +94,9 @@ open class AFDataTransferServiceCombine: DataTransferService, AFDataTransferServ
         return networkService.upload(multipartFormData: multipartFormData, to: url)
             .mapError { error -> DataTransferError in
                 switch error {
+                case NetworkError.error(statusCode: _, data: _):
+                    let error = self.errorAdapter.adapt(error)
+                    return .networkAdaptableError(error)
                 case AFError.sessionDeinitialized,
                     AFError.explicitlyCancelled:
                     return .resolvedNetworkFailure(error)
