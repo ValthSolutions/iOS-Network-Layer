@@ -89,21 +89,32 @@ open class AFDataTransferServiceCombine: DataTransferService, AFDataTransferServ
             .eraseToAnyPublisher()
     }
     
-    open func upload(multipartFormData: @escaping (MultipartFormData) -> Void,
-                     to url: URL) -> AnyPublisher<Progress, DataTransferError> {
-        return networkService.upload(multipartFormData: multipartFormData, to: url)
-            .mapError { error -> DataTransferError in
-                switch error {
-                case NetworkError.error(statusCode: _, data: _):
-                    let error = self.errorAdapter.adapt(error)
-                    return .networkAdaptableError(error)
-                case AFError.sessionDeinitialized,
-                    AFError.explicitlyCancelled:
-                    return .resolvedNetworkFailure(error)
-                default:
-                    return .networkFailure(.unknown)
-                }
+    open func upload<T, E>(_ endpoint: E,
+                           multipartFormData: @escaping (MultipartFormData) -> Void)
+    -> AnyPublisher<(Progress, T?), DataTransferError>
+    where T: Decodable, T == E.Response, E: ResponseRequestable {
+        return networkService.upload(endpoint: endpoint,
+                                     multipartFormData: multipartFormData)
+        .tryMap { progresData -> (Progress, T?) in
+            if let data = progresData.1 {
+                let result: T = try self.decode(data: data, decoder: endpoint.responseDecoder)
+                return (progresData.0, result)
+            } else {
+                return (progresData.0, nil)
             }
-            .eraseToAnyPublisher()
+        }
+        .mapError { error -> DataTransferError in
+            switch error {
+            case NetworkError.error(statusCode: _, data: _):
+                let error = self.errorAdapter.adapt(error)
+                return .networkAdaptableError(error)
+            case AFError.sessionDeinitialized,
+                AFError.explicitlyCancelled:
+                return .resolvedNetworkFailure(error)
+            default:
+                return .networkFailure(.unknown)
+            }
+        }
+        .eraseToAnyPublisher()
     }
 }

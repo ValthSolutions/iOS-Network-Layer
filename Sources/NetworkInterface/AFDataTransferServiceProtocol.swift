@@ -13,11 +13,14 @@ public protocol AFDataTransferServiceCombineProtocol {
     func download<T, E>(_ endpoint: E) -> AnyPublisher<T, DataTransferError> where T: Decodable, T == E.Response, E: ResponseRequestable
     func request<T, E>(_ endpoint: E) -> AnyPublisher<T, DataTransferError> where T: Decodable, T == E.Response, E: ResponseRequestable
     func upload(_ value: String, url: URL) -> AnyPublisher<Progress, DataTransferError>
-    func upload(multipartFormData: @escaping (MultipartFormData) -> Void, to url: URL) -> AnyPublisher<Progress, DataTransferError>
+    func upload<T, E>(_ endpoint: E,
+                      multipartFormData: @escaping (MultipartFormData) -> Void)
+    -> AnyPublisher<(Progress, T?), DataTransferError>
+    where T: Decodable, T == E.Response, E: ResponseRequestable
 }
 
 public protocol AFDataTransferServiceProtocol {
-    func request<T, E>(_ endpoint: E) async throws -> T where T: Decodable, T == E.Response, E: ResponseRequestable 
+    func request<T, E>(_ endpoint: E) async throws -> T where T: Decodable, T == E.Response, E: ResponseRequestable
     func download<T: Decodable, E: ResponseRequestable>(_ endpoint: E) async throws -> T
     func upload(_ value: String, url: URL) async throws -> Progress
     func upload(multipartFormData: @escaping (MultipartFormData) -> Void,

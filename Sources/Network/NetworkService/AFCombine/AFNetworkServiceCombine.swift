@@ -8,7 +8,7 @@ open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
     private let session: Session
     private let logger: Loger
     private let configuration: NetworkConfigurable
-    
+
     public init(session: Session,
                 logger: Loger = DEBUGLog(),
                 configuration: NetworkConfigurable) {
@@ -113,41 +113,36 @@ open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
         }.eraseToAnyPublisher()
     }
     
-    open func upload(multipartFormData: @escaping (MultipartFormData) -> Void,
-                     to url: URL) -> AnyPublisher<Progress, Error> {
-        Future<Progress, Error> { [weak self] promise in
-            self?.session.upload(multipartFormData: multipartFormData,
-                                 to: url).uploadProgress(closure: { progress in
-                promise(.success(progress))
-            }).response { response in
-                DEBUGLog().log(response)
-                switch response.result {
-                case .success:
-                    break
-                case .failure(let error):
-                    let data = response.data ?? Data()
-                    let statusCode = response.response?.statusCode
-                    promise(.failure(NetworkError.error(statusCode: error.responseCode ?? 400,
-                                                        data: data)))
-                }
+    open func upload(endpoint: Requestable,
+                     multipartFormData: @escaping (MultipartFormData) -> Void) -> AnyPublisher<(Progress, Data?), Error> {
+        let progressDataSubject = PassthroughSubject<(Progress, Data?), Error>()
+
+        do {
+            let urlRequest = try endpoint.asURLRequest(config: configuration)
+            guard let url = urlRequest.url else {
+                throw NetworkError.urlGeneration
             }
-            .validate(statusCode: 200..<300)
-            .responseData { response in
-                switch response.result {
-                case .success:
-                    break
-                case .failure(let error):
-                    if error.isExplicitlyCancelledError {
-                        promise(.failure(NetworkError.cancelled))
-                    } else if error.isSessionTaskError || error.isResponseValidationError {
-                        promise(.failure(NetworkError.generic(error)))
-                    } else {
-                        let statusCode = response.response?.statusCode ?? -1
+            session.upload(multipartFormData: multipartFormData, to: url)
+                .uploadProgress { progress in
+                    progressDataSubject.send((progress, nil))
+                }
+                .response { response in
+                    DEBUGLog().log(response)
+                    switch response.result {
+                    case .success(let data):
+                        progressDataSubject.send((Progress(totalUnitCount: 1), data))
+                        progressDataSubject.send(completion: .finished)
+                    case .failure(let error):
                         let data = response.data ?? Data()
-                        promise(.failure(NetworkError.error(statusCode: statusCode, data: data)))
+                        let statusCode = error.responseCode ?? 400
+                        let networkError = NetworkError.error(statusCode: statusCode, data: data)
+                        progressDataSubject.send(completion: .failure(networkError))
                     }
                 }
-            }
-        }.eraseToAnyPublisher()
+        } catch {
+            progressDataSubject.send(completion: .failure(NetworkError.urlGeneration))
+        }
+        
+        return progressDataSubject.eraseToAnyPublisher()
     }
 }
