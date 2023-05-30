@@ -93,6 +93,7 @@ open class AFDataTransferServiceCombine: DataTransferService, AFDataTransferServ
                            multipartFormData: @escaping (MultipartFormData) -> Void)
     -> AnyPublisher<(Progress, T?), DataTransferError>
     where T: Decodable, T == E.Response, E: ResponseRequestable {
+        
         return networkService.upload(endpoint: endpoint,
                                      multipartFormData: multipartFormData)
         .tryMap { progresData -> (Progress, T?) in
