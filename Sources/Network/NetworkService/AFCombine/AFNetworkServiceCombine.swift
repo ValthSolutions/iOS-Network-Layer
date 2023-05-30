@@ -64,7 +64,17 @@ open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
                     guard let destinationURL = response.fileURL else {
                         throw DataTransferError.noResponse
                     }
-                    return try Data(contentsOf: destinationURL)
+                    let data = try Data(contentsOf: destinationURL)
+                    guard let statusCode = response.response?.statusCode else {
+                        throw AFError.responseSerializationFailed(reason: .inputDataNilOrZeroLength)
+                    }
+                    if let statusCode = response.response?.statusCode,
+                       let networkStatusCode = NetworkStatusCode(rawValue: statusCode),
+                       networkStatusCode.isAcceptable {
+                        return data
+                    } else {
+                        throw NetworkError.error(statusCode: statusCode, data: data)
+                    }
                 }
                 .mapError { error -> Error in
                     if let afError = error as? AFError {
@@ -115,7 +125,10 @@ open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
                 case .success:
                     break
                 case .failure(let error):
-                    promise(.failure(NetworkError.generic(error)))
+                    let data = response.data ?? Data()
+                    let statusCode = response.response?.statusCode
+                    promise(.failure(NetworkError.error(statusCode: error.responseCode ?? 400,
+                                                        data: data)))
                 }
             }
             .validate(statusCode: 200..<300)
