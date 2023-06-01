@@ -12,7 +12,7 @@ import Alamofire
 public protocol AFDataTransferServiceCombineProtocol {
     func download<T, E>(_ endpoint: E) -> AnyPublisher<T, DataTransferError> where T: Decodable, T == E.Response, E: ResponseRequestable
     func request<T, E>(_ endpoint: E) -> AnyPublisher<T, DataTransferError> where T: Decodable, T == E.Response, E: ResponseRequestable
-    func upload(_ value: String, url: URL) -> AnyPublisher<Progress, DataTransferError>
+    func upload<T, E>(_ value: Data, _ endpoint: E) -> AnyPublisher<Progress, DataTransferError>  where T: Decodable, T == E.Response, E: ResponseRequestable
     func upload<T, E>(_ endpoint: E,
                       multipartFormData: @escaping (MultipartFormData) -> Void)
     -> AnyPublisher<(Progress, T?), DataTransferError>

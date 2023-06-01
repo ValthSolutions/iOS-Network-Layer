@@ -94,12 +94,11 @@ open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
     open func upload(endpoint: Requestable,_  data: Data) -> AnyPublisher<Progress, Error> {
         do {
             let urlRequest = try endpoint.asURLRequest(config: configuration)
-            
             return Future<Progress, Error> { [weak self] promise in
                 self?.session.upload(data, with: urlRequest).uploadProgress(closure: { progress in
                     promise(.success(progress))
                 }).response { response in
-                    DEBUGLog().log(response)
+                    DEBUGLog().log(response, endpoint)
                     switch response.result {
                     case .success:
                         break
@@ -130,7 +129,7 @@ open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
                     progressDataSubject.send((progress, nil))
                 }
                 .response { response in
-                    DEBUGLog().log(response)
+                    DEBUGLog().log(response, endpoint)
                     switch response.result {
                     case .success(let data):
                         progressDataSubject.send((Progress(totalUnitCount: 1), data))

@@ -71,9 +71,8 @@ open class AFDataTransferServiceCombine: DataTransferService, AFDataTransferServ
             .eraseToAnyPublisher()
     }
     
-    open func upload(_ value: String, url: URL) -> AnyPublisher<Progress, DataTransferError> {
-        let encodedData = try! self.encode(value, encoder: JSONEncoderData())
-        return networkService.upload(encodedData, to: url)
+    open func upload<T, E>(_ value: Data, _ endpoint: E) -> AnyPublisher<Progress, DataTransferError>  where T: Decodable, T == E.Response, E: ResponseRequestable {
+        return networkService.upload(endpoint: endpoint, value)
             .mapError { error -> DataTransferError in
                 switch error {
                 case NetworkError.error(statusCode: _, data: _):
