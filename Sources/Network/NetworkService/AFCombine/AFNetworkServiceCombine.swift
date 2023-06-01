@@ -91,26 +91,32 @@ open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
         }
     }
     
-    open func upload(_ data: Data, to url: URL) -> AnyPublisher<Progress, Error> {
-        Future<Progress, Error> { [weak self] promise in
-            self?.session.upload(data, to: url).uploadProgress(closure: { progress in
-                promise(.success(progress))
-            }).response { response in
-                DEBUGLog().log(response)
-                switch response.result {
-                case .success:
-                    break
-                case .failure(let error):
-                    if (error.underlyingError != nil) {
-                        promise(.failure(error.underlyingError ?? NetworkError.generic(error)))
-                    } else {
-                        let statusCode = response.response?.statusCode ?? -1
-                        let data = response.data ?? Data()
-                        promise(.failure(NetworkError.error(statusCode: statusCode, data: data)))
+    open func upload(endpoint: Requestable,_  data: Data) -> AnyPublisher<Progress, Error> {
+        do {
+            let urlRequest = try endpoint.asURLRequest(config: configuration)
+            
+            return Future<Progress, Error> { [weak self] promise in
+                self?.session.upload(data, with: urlRequest).uploadProgress(closure: { progress in
+                    promise(.success(progress))
+                }).response { response in
+                    DEBUGLog().log(response)
+                    switch response.result {
+                    case .success:
+                        break
+                    case .failure(let error):
+                        if (error.underlyingError != nil) {
+                            promise(.failure(error.underlyingError ?? NetworkError.generic(error)))
+                        } else {
+                            let statusCode = response.response?.statusCode ?? -1
+                            let data = response.data ?? Data()
+                            promise(.failure(NetworkError.error(statusCode: statusCode, data: data)))
+                        }
                     }
                 }
-            }
-        }.eraseToAnyPublisher()
+            }.eraseToAnyPublisher()
+        } catch {
+            return Fail(error: NetworkError.urlGeneration).eraseToAnyPublisher()
+        }
     }
     
     open func upload(endpoint: Requestable,
@@ -119,10 +125,7 @@ open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
 
         do {
             let urlRequest = try endpoint.asURLRequest(config: configuration)
-            guard let url = urlRequest.url else {
-                throw NetworkError.urlGeneration
-            }
-            session.upload(multipartFormData: multipartFormData, to: url)
+            session.upload(multipartFormData: multipartFormData, with: urlRequest)
                 .uploadProgress { progress in
                     progressDataSubject.send((progress, nil))
                 }
