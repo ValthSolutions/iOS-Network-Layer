@@ -21,7 +21,7 @@ let package = Package(
             targets: ["SampleApp"]),
     ],
     
-    dependencies: [
+    dependencies: [ 
         .package(url: "https://github.com/Alamofire/Alamofire.git", .upToNextMajor(from: "5.6.1")),
     ],
     
