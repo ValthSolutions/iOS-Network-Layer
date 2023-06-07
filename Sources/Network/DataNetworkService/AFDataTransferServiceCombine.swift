@@ -72,26 +72,31 @@ open class AFDataTransferServiceCombine: DataTransferService, AFDataTransferServ
             .eraseToAnyPublisher()
     }
     
-    open func upload<T, E>(_ value: Data, _ endpoint: E) -> AnyPublisher<Progress, DataTransferError>  where T: Decodable, T == E.Response, E: ResponseRequestable {
-        return networkService.upload(endpoint: endpoint, value)
-            .mapError { error -> DataTransferError in
-                switch error {
-                case NetworkError.error(statusCode: _, data: _):
-                    let error = self.errorAdapter.adapt(error)
-                    return .networkAdaptableError(error)
-                case AFError.sessionDeinitialized,
-                    AFError.explicitlyCancelled:
-                    return .resolvedNetworkFailure(error)
-                default:
-                    return .networkFailure(.unknown)
-                }
-            }
-            .eraseToAnyPublisher()
+    open func upload<T, E>(
+        _ value: Data,
+        _ endpoint: E
+    ) -> (AnyPublisher<Progress, DataTransferError>,
+          AnyPublisher<T, DataTransferError>)
+    where T: Decodable, T == E.Response, E: ResponseRequestable {
+            
+        let progressSubject = PassthroughSubject<Progress, DataTransferError>()
+        let dataSubject = PassthroughSubject<T, DataTransferError>()
+            
+        let request = networkService.upload(endpoint: endpoint, value)
+
+        handleUploadResponse(request,
+                             endpoint: endpoint,
+                             progressSubject: progressSubject,
+                             dataSubject: dataSubject)
+            
+        return (progressSubject.eraseToAnyPublisher(), dataSubject.eraseToAnyPublisher())
     }
     
-    open func upload<T, E>(_ endpoint: E,
-                           multipartFormData: @escaping (MultipartFormData) -> Void)
-    -> (AnyPublisher<Progress, DataTransferError>, AnyPublisher<T, DataTransferError>)
+    open func upload<T, E>(
+        _ endpoint: E,
+        multipartFormData: @escaping (MultipartFormData) -> Void
+    ) -> (AnyPublisher<Progress, DataTransferError>,
+          AnyPublisher<T, DataTransferError>)
     where T: Decodable, T == E.Response, E: ResponseRequestable {
 
         let progressSubject = PassthroughSubject<Progress, DataTransferError>()
@@ -99,11 +104,30 @@ open class AFDataTransferServiceCombine: DataTransferService, AFDataTransferServ
         
         let request = networkService.upload(endpoint: endpoint,
                                             multipartFormData: multipartFormData)
+
+        handleUploadResponse(request,
+                             endpoint: endpoint,
+                             progressSubject: progressSubject,
+                             dataSubject: dataSubject)
         
-        request
+        return (progressSubject.eraseToAnyPublisher(), dataSubject.eraseToAnyPublisher())
+    }
+}
+
+// MARK: - Private
+
+extension AFDataTransferServiceCombine {
+    private func handleUploadResponse<T, E>(
+        _ response: AnyPublisher<(Progress, Data?), Error>,
+        endpoint: E,
+        progressSubject: PassthroughSubject<Progress, DataTransferError>,
+        dataSubject: PassthroughSubject<T, DataTransferError>)
+    where T: Decodable, T == E.Response, E: ResponseRequestable {
+
+        response
             .sink(receiveCompletion: { _ in }) { (progress, data) in
                 progressSubject.send(progress)
-                
+
                 if let data = data {
                     do {
                         let result: T = try self.decode(data: data, decoder: endpoint.responseDecoder)
@@ -114,8 +138,8 @@ open class AFDataTransferServiceCombine: DataTransferService, AFDataTransferServ
                 }
             }
             .store(in: &cancellables)
-        
-        request
+
+        response
             .sink(receiveCompletion: { completion in
                 switch completion {
                 case .finished:
@@ -127,7 +151,5 @@ open class AFDataTransferServiceCombine: DataTransferService, AFDataTransferServ
                 }
             }, receiveValue: { _ in })
             .store(in: &cancellables)
-        
-        return (progressSubject.eraseToAnyPublisher(), dataSubject.eraseToAnyPublisher())
     }
 }

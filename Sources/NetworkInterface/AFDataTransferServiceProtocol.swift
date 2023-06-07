@@ -12,7 +12,7 @@ import Alamofire
 public protocol AFDataTransferServiceCombineProtocol {
     func download<T, E>(_ endpoint: E) -> AnyPublisher<T, DataTransferError> where T: Decodable, T == E.Response, E: ResponseRequestable
     func request<T, E>(_ endpoint: E) -> AnyPublisher<T, DataTransferError> where T: Decodable, T == E.Response, E: ResponseRequestable
-    func upload<T, E>(_ value: Data, _ endpoint: E) -> AnyPublisher<Progress, DataTransferError>  where T: Decodable, T == E.Response, E: ResponseRequestable
+    func upload<T, E>(_ value: Data, _ endpoint: E) -> (AnyPublisher<Progress, DataTransferError>, AnyPublisher<T, DataTransferError>) where T: Decodable, T == E.Response, E: ResponseRequestable
     func upload<T, E>(_ endpoint: E,
                            multipartFormData: @escaping (MultipartFormData) -> Void)
     -> (AnyPublisher<Progress, DataTransferError>, AnyPublisher<T, DataTransferError>)
@@ -81,3 +81,5 @@ extension NetworkError {
         }
     }
 }
+
+public struct Voidable: Decodable {}

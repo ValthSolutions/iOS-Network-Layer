@@ -13,7 +13,7 @@ import Combine
 public protocol AFNetworkServiceCombineProtocol {
     func request(endpoint: Requestable) -> AnyPublisher<Data, Error>
     func download(endpoint: Requestable) -> AnyPublisher<Data, Error>
-    func upload(endpoint: Requestable,_  data: Data) -> AnyPublisher<Progress, Error>
+    func upload(endpoint: Requestable, _ data: Data) -> AnyPublisher<(Progress, Data?), Error>
     func upload(endpoint: Requestable,
                      multipartFormData: @escaping (MultipartFormData) -> Void) -> AnyPublisher<(Progress, Data?), Error>
 }

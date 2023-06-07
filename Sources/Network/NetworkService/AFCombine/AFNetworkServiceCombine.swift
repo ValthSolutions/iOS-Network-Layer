@@ -91,45 +91,44 @@ open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
         }
     }
     
-    open func upload(endpoint: Requestable,_  data: Data) -> AnyPublisher<Progress, Error> {
-        do {
-            let urlRequest = try endpoint.asURLRequest(config: configuration)
-            return Future<Progress, Error> { [weak self] promise in
-                self?.session.upload(data, with: urlRequest).uploadProgress(closure: { progress in
-                    promise(.success(progress))
-                }).response { response in
-                    DEBUGLog().log(response, endpoint)
-                    switch response.result {
-                    case .success:
-                        break
-                    case .failure(let error):
-                        if (error.underlyingError != nil) {
-                            promise(.failure(error.underlyingError ?? NetworkError.generic(error)))
-                        } else {
-                            let statusCode = response.response?.statusCode ?? -1
-                            let data = response.data ?? Data()
-                            promise(.failure(NetworkError.error(statusCode: statusCode, data: data)))
-                        }
-                    }
-                }
-            }.eraseToAnyPublisher()
-        } catch {
-            return Fail(error: NetworkError.urlGeneration).eraseToAnyPublisher()
+    open func upload(
+        endpoint: Requestable,
+        _ data: Data
+    ) -> AnyPublisher<(Progress, Data?), Error> {
+        return handleUpload(endpoint: endpoint) { urlRequest in
+            session.upload(data, with: urlRequest)
         }
     }
     
-    open func upload(endpoint: Requestable,
-                     multipartFormData: @escaping (MultipartFormData) -> Void) -> AnyPublisher<(Progress, Data?), Error> {
-        let progressDataSubject = PassthroughSubject<(Progress, Data?), Error>()
+    open func upload(
+        endpoint: Requestable,
+        multipartFormData: @escaping (MultipartFormData) -> Void
+    ) -> AnyPublisher<(Progress, Data?), Error> {
+        return handleUpload(endpoint: endpoint) { urlRequest in
+            return session.upload(multipartFormData: multipartFormData, with: urlRequest)
+        }
+    }
+}
 
+ // MARK: - Private
+
+extension AFNetworkServiceCombine {
+    private func handleUpload(
+        endpoint: Requestable,
+        uploadMethod: (URLRequest) throws -> UploadRequest
+    ) -> AnyPublisher<(Progress, Data?), Error> {
+        let progressDataSubject = PassthroughSubject<(Progress, Data?), Error>()
+        
         do {
             let urlRequest = try endpoint.asURLRequest(config: configuration)
-            session.upload(multipartFormData: multipartFormData, with: urlRequest)
+            let uploadRequest = try uploadMethod(urlRequest)
+            
+            uploadRequest
                 .uploadProgress { progress in
                     progressDataSubject.send((progress, nil))
                 }
                 .response { response in
-                    DEBUGLog().log(response, endpoint)
+                    self.logger.log(response, endpoint)
                     switch response.result {
                     case .success(let data):
                         progressDataSubject.send((Progress(totalUnitCount: 1), data))
