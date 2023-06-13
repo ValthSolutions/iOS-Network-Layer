@@ -38,7 +38,7 @@ public enum DataTransferError: Error {
 public enum NetworkError: Error {
     case error(statusCode: Int, data: Data)
     case unacceptableStatusCode(statusCode: Int)
-    case notConnected
+    case notConnectedToInternet
     case cancelled
     case generic(Error)
     case urlGeneration
@@ -49,6 +49,7 @@ public enum AdapterError: Error {
     case defaultError
     case generic(String)
     case decoding(String)
+    case notConnectedToInternet(String)
     case serverErrors(String)
 }
 

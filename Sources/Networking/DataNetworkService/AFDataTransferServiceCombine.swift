@@ -15,7 +15,7 @@ open class AFDataTransferServiceCombine: DataTransferService, AFDataTransferServ
     private let networkService: AFNetworkServiceCombineProtocol
     private let errorAdapter: IErrorAdapter
     private var cancellables = Set<AnyCancellable>()
-
+    
     public init(with networkService: AFNetworkServiceCombineProtocol,
                 errorAdapter: IErrorAdapter) {
         self.networkService = networkService
@@ -32,6 +32,9 @@ open class AFDataTransferServiceCombine: DataTransferService, AFDataTransferServ
             .mapError { error -> DataTransferError in
                 switch error {
                 case NetworkError.error(statusCode: _, data: _):
+                    let error = self.errorAdapter.adapt(error)
+                    return .networkAdaptableError(error)
+                case NetworkError.notConnectedToInternet:
                     let error = self.errorAdapter.adapt(error)
                     return .networkAdaptableError(error)
                 case AFError.responseValidationFailed(reason: .unacceptableStatusCode(code: let statusCode)):
@@ -59,6 +62,9 @@ open class AFDataTransferServiceCombine: DataTransferService, AFDataTransferServ
                 case NetworkError.error(statusCode: _, data: _):
                     let error = self.errorAdapter.adapt(error)
                     return .networkAdaptableError(error)
+                case NetworkError.notConnectedToInternet:
+                    let error = self.errorAdapter.adapt(error)
+                    return .networkAdaptableError(error)
                 case AFError.responseValidationFailed(reason: .unacceptableStatusCode(code: let statusCode)):
                     return .networkFailure(.unacceptableStatusCode(statusCode: statusCode))
                 case AFError.sessionDeinitialized,
@@ -78,17 +84,17 @@ open class AFDataTransferServiceCombine: DataTransferService, AFDataTransferServ
     ) -> (AnyPublisher<Progress, DataTransferError>,
           AnyPublisher<T, DataTransferError>)
     where T: Decodable, T == E.Response, E: ResponseRequestable {
-            
+        
         let progressSubject = PassthroughSubject<Progress, DataTransferError>()
         let dataSubject = PassthroughSubject<T, DataTransferError>()
-            
+        
         let request = networkService.upload(endpoint: endpoint, value)
-
+        
         handleUploadResponse(request,
                              endpoint: endpoint,
                              progressSubject: progressSubject,
                              dataSubject: dataSubject)
-            
+        
         return (progressSubject.eraseToAnyPublisher(), dataSubject.eraseToAnyPublisher())
     }
     
@@ -98,13 +104,13 @@ open class AFDataTransferServiceCombine: DataTransferService, AFDataTransferServ
     ) -> (AnyPublisher<Progress, DataTransferError>,
           AnyPublisher<T, DataTransferError>)
     where T: Decodable, T == E.Response, E: ResponseRequestable {
-
+        
         let progressSubject = PassthroughSubject<Progress, DataTransferError>()
         let dataSubject = PassthroughSubject<T, DataTransferError>()
         
         let request = networkService.upload(endpoint: endpoint,
                                             multipartFormData: multipartFormData)
-
+        
         handleUploadResponse(request,
                              endpoint: endpoint,
                              progressSubject: progressSubject,
@@ -123,11 +129,11 @@ extension AFDataTransferServiceCombine {
         progressSubject: PassthroughSubject<Progress, DataTransferError>,
         dataSubject: PassthroughSubject<T, DataTransferError>)
     where T: Decodable, T == E.Response, E: ResponseRequestable {
-
+        
         response
             .sink(receiveCompletion: { _ in }) { (progress, data) in
                 progressSubject.send(progress)
-
+                
                 if let data = data {
                     do {
                         let result: T = try self.decode(data: data, decoder: endpoint.responseDecoder)
@@ -138,16 +144,31 @@ extension AFDataTransferServiceCombine {
                 }
             }
             .store(in: &cancellables)
-
+        
         response
             .sink(receiveCompletion: { completion in
                 switch completion {
                 case .finished:
                     progressSubject.send(completion: .finished)
                     dataSubject.send(completion: .finished)
-                case .failure:
-                    progressSubject.send(completion: .failure(.noResponse))
-                    dataSubject.send(completion: .failure(.noResponse))
+                case .failure(let error):
+                    let adaptedError: DataTransferError
+                    switch error {
+                    case NetworkError.error(statusCode: _, data: _),
+                        NetworkError.notConnectedToInternet:
+                        adaptedError = .networkAdaptableError(self.errorAdapter.adapt(error))
+                    case AFError.responseValidationFailed(reason: .unacceptableStatusCode(code: let statusCode)):
+                        adaptedError = .networkFailure(.unacceptableStatusCode(statusCode: statusCode))
+                    case AFError.sessionDeinitialized,
+                        AFError.explicitlyCancelled,
+                        AFError.responseSerializationFailed(reason: _):
+                        adaptedError = .resolvedNetworkFailure(error)
+                    default:
+                        adaptedError = .networkFailure(.unknown)
+                    }
+                    
+                    progressSubject.send(completion: .failure(adaptedError))
+                    dataSubject.send(completion: .failure(adaptedError))
                 }
             }, receiveValue: { _ in })
             .store(in: &cancellables)

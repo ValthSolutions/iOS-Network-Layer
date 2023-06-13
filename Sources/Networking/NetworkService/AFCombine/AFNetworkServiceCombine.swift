@@ -27,7 +27,7 @@ open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
                     self?.logger.log(response, endpoint)
                     guard let data = response.data,
                           let statusCode = response.response?.statusCode else {
-                        throw AFError.responseSerializationFailed(reason: .inputDataNilOrZeroLength)
+                        throw NetworkError.notConnectedToInternet
                     }
                     
                     if let statusCode = response.response?.statusCode,
@@ -66,7 +66,7 @@ open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
                     }
                     let data = try Data(contentsOf: destinationURL)
                     guard let statusCode = response.response?.statusCode else {
-                        throw AFError.responseSerializationFailed(reason: .inputDataNilOrZeroLength)
+                        throw NetworkError.notConnectedToInternet
                     }
                     if let statusCode = response.response?.statusCode,
                        let networkStatusCode = NetworkStatusCode(rawValue: statusCode),
@@ -110,7 +110,7 @@ open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
     }
 }
 
- // MARK: - Private
+// MARK: - Private
 
 extension AFNetworkServiceCombine {
     private func handleUpload(
@@ -134,10 +134,15 @@ extension AFNetworkServiceCombine {
                         progressDataSubject.send((Progress(totalUnitCount: 1), data))
                         progressDataSubject.send(completion: .finished)
                     case .failure(let error):
-                        let data = response.data ?? Data()
-                        let statusCode = error.responseCode ?? 400
-                        let networkError = NetworkError.error(statusCode: statusCode, data: data)
-                        progressDataSubject.send(completion: .failure(networkError))
+                        if let underlyingError = error.underlyingError as? URLError,
+                           underlyingError.code == .notConnectedToInternet {
+                            progressDataSubject.send(completion: .failure(NetworkError.notConnectedToInternet))
+                        } else {
+                            let data = response.data ?? Data()
+                            let statusCode = error.responseCode ?? 400
+                            let networkError = NetworkError.error(statusCode: statusCode, data: data)
+                            progressDataSubject.send(completion: .failure(networkError))
+                        }
                     }
                 }
         } catch {
