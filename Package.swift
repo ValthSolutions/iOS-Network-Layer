@@ -14,8 +14,8 @@ let package = Package(
             name: "NetworkInterface",
             targets: ["NetworkInterface"]),
         .library(
-            name: "Network",
-            targets: ["Network"]),
+            name: "Networking",
+            targets: ["Networking"]),
         .library(
             name: "SampleApp",
             targets: ["SampleApp"]),
@@ -29,7 +29,7 @@ let package = Package(
         .target(
             name: "SampleApp",
             dependencies: [
-            "NetworkInterface", "Network"
+            "NetworkInterface", "Networking"
             ]),
         .target(
             name: "NetworkInterface",
@@ -37,7 +37,7 @@ let package = Package(
                 .product(name: "Alamofire", package: "Alamofire"),
             ]),
         .target(
-            name: "Network",
+            name: "Networking",
             dependencies: [
                 "NetworkInterface",
                 .product(name: "Alamofire", package: "Alamofire"),

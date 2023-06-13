@@ -6,7 +6,7 @@
 //
 
 import UIKit
-import Network
+import Networking
 import Combine
 import NetworkInterface
 
