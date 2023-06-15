@@ -25,4 +25,3 @@ open class DataTransferService {
         return try encoder.encode(value)
     }
 }
-

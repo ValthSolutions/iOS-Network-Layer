@@ -15,6 +15,7 @@ public struct DEBUGLog: Loger {
         methodName(response.request?.httpMethod)
         urlPath(response.request?.url?.absoluteString)
         parameters(config?.queryParameters)
+        bodyParameters(config?.bodyParameters)
         header(response.request?.allHTTPHeaderFields)
         statusCode(response.response?.statusCode)
         metrics(response.metrics)
@@ -27,6 +28,7 @@ public struct DEBUGLog: Loger {
         methodName(response.request?.httpMethod)
         urlPath(response.request?.url?.absoluteString)
         parameters(config?.queryParameters)
+        bodyParameters(config?.bodyParameters)
         header(response.request?.allHTTPHeaderFields)
         statusCode(response.response?.statusCode)
         metrics(response.metrics)
@@ -39,6 +41,7 @@ public struct DEBUGLog: Loger {
         methodName(response.request?.httpMethod)
         urlPath(response.request?.url?.absoluteString)
         parameters(config?.queryParameters)
+        bodyParameters(config?.bodyParameters)
         header(response.request?.allHTTPHeaderFields)
         statusCode(response.response?.statusCode)
         metrics(response.metrics)
@@ -93,9 +96,20 @@ public struct DEBUGLog: Loger {
             let string = parameters.compactMap {
                 "[\($0): \($1)]"
             }.joined(separator: "\n           ")
-            print("📘 Parameters:", string, separator: separator)
+            print("📘 Query Parameters:", string, separator: separator)
         } else {
-            print("📓 Parameters:", empty, separator: separator)
+            print("📓 Query Parameters:", empty, separator: separator)
+        }
+    }
+    
+    fileprivate func bodyParameters(_ parameters: [String: Any]?) {
+        if let parameters = parameters, parameters.isEmpty == false {
+            let string = parameters.compactMap {
+                "[\($0): \($1)]"
+            }.joined(separator: "\n           ")
+            print("📘 Body Parameters:", string, separator: separator)
+        } else {
+            print("📓 Body Parameters:", empty, separator: separator)
         }
     }
     
