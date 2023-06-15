@@ -43,6 +43,7 @@ public enum NetworkError: Error {
     case generic(Error)
     case urlGeneration
     case unknown
+    case noData
 }
 
 public enum AdapterError: Error {

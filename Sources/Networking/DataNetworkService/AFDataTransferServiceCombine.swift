@@ -26,8 +26,12 @@ open class AFDataTransferServiceCombine: DataTransferService, AFDataTransferServ
     where T: Decodable, T == E.Response, E: ResponseRequestable {
         return networkService.request(endpoint: endpoint)
             .tryMap { data -> T in
-                let result: T = try self.decode(data: data, decoder: endpoint.responseDecoder)
-                return result
+                if data.isEmpty && T.self == EmptyDTO.self {
+                       return EmptyDTO() as! T
+                   } else {
+                    let result: T = try self.decode(data: data, decoder: endpoint.responseDecoder)
+                    return result
+                }
             }
             .mapError { error -> DataTransferError in
                 switch error {

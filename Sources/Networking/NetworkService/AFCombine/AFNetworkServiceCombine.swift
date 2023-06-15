@@ -8,7 +8,7 @@ open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
     private let session: Session
     private let logger: Loger
     private let configuration: NetworkConfigurable
-
+    
     public init(session: Session,
                 logger: Loger = DEBUGLog(),
                 configuration: NetworkConfigurable) {
@@ -25,10 +25,12 @@ open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
                 .publishData()
                 .tryMap { [weak self] response -> Data in
                     self?.logger.log(response, endpoint)
-                    guard let data = response.data,
-                          let statusCode = response.response?.statusCode else {
+                    
+                    guard let statusCode = response.response?.statusCode else {
                         throw NetworkError.notConnectedToInternet
                     }
+                    
+                    let data = response.data ?? Data()
                     
                     if let statusCode = response.response?.statusCode,
                        let networkStatusCode = NetworkStatusCode(rawValue: statusCode),
@@ -40,7 +42,13 @@ open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
                 }
                 .mapError { error -> Error in
                     if let afError = error as? AFError {
-                        return afError.underlyingError ?? NetworkError.generic(error)
+                        if let underlyingError = afError.underlyingError as NSError?,
+                           underlyingError.domain == NSURLErrorDomain,
+                           underlyingError.code == NSURLErrorNotConnectedToInternet {
+                            return NetworkError.notConnectedToInternet
+                        } else {
+                            return NetworkError.generic(error)
+                        }
                     } else if let networkError = error as? NetworkError {
                         return networkError
                     } else {
