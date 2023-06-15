@@ -50,7 +50,7 @@ public enum AdapterError: Error {
     case generic(String)
     case decoding(String)
     case notConnectedToInternet(String)
-    case serverErrors(String)
+    case serverErrors(String, Int?)
 }
 
 public enum NetworkStatusCode: Int {
