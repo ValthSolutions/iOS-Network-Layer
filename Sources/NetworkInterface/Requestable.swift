@@ -18,6 +18,7 @@ public protocol Requestable {
     var bodyParametersEncodable: Encodable? { get }
     var bodyParameters: [String: Any] { get }
     var bodyEncoding: BodyEncoding { get }
+    var bodyArrayEncodable: [AnyEncodable]? { get }
 }
 
 public enum HTTPMethodType: String {
@@ -53,4 +54,22 @@ public enum RequestGenerationError: Error {
 
 public protocol DataEncoder {
     func encode<T: Encodable>(_ data: T) throws -> Data
+}
+
+public struct AnyEncodable: Encodable {
+    private let _encode: (Encoder) throws -> Void
+
+    public init<T: Encodable>(_ wrapped: T) {
+        _encode = wrapped.encode
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        try _encode(encoder)
+    }
+}
+
+public extension Array where Element: Encodable {
+    func asAnyEncodable() -> [AnyEncodable] {
+        return self.map { AnyEncodable($0) }
+    }
 }
