@@ -19,6 +19,7 @@ open class Endpoint<R>: ResponseRequestable {
     public var queryParametersEncodable: Encodable?
     public var queryParameters: [String: Any]
     public var bodyParametersEncodable: Encodable?
+    public var bodyArrayEncodable: [AnyEncodable]?
     public var bodyParameters: [String: Any]
     public var bodyEncoding: BodyEncoding
     public var responseDecoder: ResponseDecoder
@@ -30,6 +31,7 @@ open class Endpoint<R>: ResponseRequestable {
                 queryParametersEncodable: Encodable? = nil,
                 queryParameters: [String: Any] = [:],
                 bodyParametersEncodable: Encodable? = nil,
+                bodyArrayEncodable: [AnyEncodable]? = nil,
                 bodyParameters: [String: Any] = [:],
                 bodyEncoding: BodyEncoding = .jsonSerializationData,
                 keyPath: String? = nil) {
@@ -42,6 +44,7 @@ open class Endpoint<R>: ResponseRequestable {
         self.queryParameters = queryParameters
         self.bodyParametersEncodable = bodyParametersEncodable
         self.bodyParameters = bodyParameters
+        self.bodyArrayEncodable = bodyArrayEncodable
         self.bodyEncoding = bodyEncoding
         self.responseDecoder = responseDecoder
     }
@@ -57,6 +60,11 @@ extension Requestable {
         headerParameters.forEach { allHeaders.updateValue($1, forKey: $0) }
         
         let bodyParameters = try bodyParametersEncodable?.toDictionary() ?? self.bodyParameters
+        
+        if let bodyArray = bodyArrayEncodable {
+            let jsonEncoder = JSONEncoder()
+            urlRequest.httpBody = try jsonEncoder.encode(bodyArray)
+        }
         
         if !bodyParameters.isEmpty {
             urlRequest.httpBody = encodeBody(bodyParamaters: bodyParameters, bodyEncoding: bodyEncoding)
