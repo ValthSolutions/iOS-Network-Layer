@@ -3,7 +3,7 @@ import Alamofire
 import Foundation
 import NetworkInterface
 
-open class AFNetworkService: AFNetworkServiceProtocol {
+open class AFNetworkService: AFReachableNetworkService, AFNetworkServiceProtocol {
     
     private let session: Session
     private let logger: Loger
@@ -18,6 +18,9 @@ open class AFNetworkService: AFNetworkServiceProtocol {
     }
     
     open func request(endpoint: Requestable) async throws -> Data {
+        guard isInternetAvailable() else {
+            throw NetworkError.notConnectedToInternet
+        }
         let urlRequest = try endpoint.asURLRequest(config: configuration)
         let response = session.request(urlRequest).serializingData()
         await logger.log(response.response, endpoint)
@@ -39,6 +42,9 @@ open class AFNetworkService: AFNetworkServiceProtocol {
     }
     
     open func download(endpoint: Requestable) async throws -> Data {
+        guard isInternetAvailable() else {
+            throw NetworkError.notConnectedToInternet
+        }
         let urlRequest = try endpoint.asURLRequest(config: configuration)
         let response = session.download(urlRequest).serializingData()
         await logger.log(response.response, endpoint)
@@ -60,6 +66,9 @@ open class AFNetworkService: AFNetworkServiceProtocol {
     }
     
     open func upload(_ data: Data, to url: URL) async throws -> Progress {
+        guard isInternetAvailable() else {
+            throw NetworkError.notConnectedToInternet
+        }
         return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Progress, Error>) in
             self.session.upload(data, to: url).uploadProgress(closure: { progress in
                 continuation.resume(returning: progress)
@@ -83,6 +92,9 @@ open class AFNetworkService: AFNetworkServiceProtocol {
     
     open func upload(multipartFormData: @escaping (MultipartFormData) -> Void,
                      to url: URL) async throws -> Progress {
+        guard isInternetAvailable() else {
+            throw NetworkError.notConnectedToInternet
+        }
         return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Progress, Error>) in
             self.session.upload(multipartFormData: multipartFormData, to: url).uploadProgress(closure: { progress in
                 continuation.resume(returning: progress)
