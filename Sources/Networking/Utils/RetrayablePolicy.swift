@@ -9,7 +9,7 @@ import Foundation
 import Alamofire
 import NetworkInterface
 
-open class RetryPolicy: RequestRetrier {
+open class RetrayablePolicy: RequestRetrier {
     private let maxRetryCount: Int
     private let retryProvider: RetryProviderProtocol?
     private var retryCount = [URL: Int]()
@@ -20,16 +20,22 @@ open class RetryPolicy: RequestRetrier {
         self.maxRetryCount = maxRetryCount
         self.retryProvider = retryProvider
     }
-    
-    public func retry(_ request: Request, for session: Session, dueTo error: Error, completion: @escaping (RetryResult) -> Void) {
-        
+
+    public func retry(_ request: Request,
+                      for session: Session,
+                      dueTo error: Error,
+                      completion: @escaping (RetryResult) -> Void) {
         guard let url = request.request?.url,
               let response = request.task?.response as? HTTPURLResponse else {
             completion(.doNotRetryWithError(error))
             return
         }
         
-        guard let retryCount = retryCount[url], retryCount < maxRetryCount else {
+        if retryCount[url] == nil {
+            retryCount[url] = 0
+        }
+
+        guard let currentRetryCount = retryCount[url], currentRetryCount < maxRetryCount else {
             completion(.doNotRetryWithError(error))
             return
         }
@@ -43,7 +49,7 @@ open class RetryPolicy: RequestRetrier {
                 
                 isRefreshingToken = false
                 if isSuccess {
-                    self.retryCount[url] = retryCount + 1
+                    self.retryCount[url] = (self.retryCount[url] ?? 0) + 1
                     self.requestsToRetry.forEach { $0(.retry) }
                 } else {
                     self.requestsToRetry.forEach { $0(.doNotRetryWithError(error)) }

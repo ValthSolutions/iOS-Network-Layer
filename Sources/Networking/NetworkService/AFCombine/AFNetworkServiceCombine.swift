@@ -8,14 +8,14 @@ open class AFNetworkServiceCombine: AFReachableNetworkService,
     
     private let session: Session
     private let logger: Loger
-    private let configuration: NetworkConfigurable
+    private let fetchConfiguration: () -> NetworkConfigurable
     
     public init(session: Session,
                 logger: Loger = DEBUGLog(),
-                configuration: NetworkConfigurable) {
+                fetchConfiguration: @escaping () -> NetworkConfigurable) {
         self.session = session
         self.logger = logger
-        self.configuration = configuration
+        self.fetchConfiguration = fetchConfiguration
     }
     
     open func request(endpoint: Requestable) -> AnyPublisher<Data, Error> {
@@ -23,9 +23,10 @@ open class AFNetworkServiceCombine: AFReachableNetworkService,
             return Fail(error: NetworkError.notConnectedToInternet).eraseToAnyPublisher()
         }
         do {
-            let urlRequest = try endpoint.asURLRequest(config: configuration)
+            let urlRequest = try endpoint.asURLRequest(config: fetchConfiguration())
             return session
                 .request(urlRequest)
+                .validate()
                 .publishData()
                 .tryMap { [weak self] response -> Data in
                     self?.logger.log(response, endpoint)
@@ -62,9 +63,10 @@ open class AFNetworkServiceCombine: AFReachableNetworkService,
             return Fail(error: NetworkError.notConnectedToInternet).eraseToAnyPublisher()
         }
         do {
-            let urlRequest = try endpoint.asURLRequest(config: configuration)
+            let urlRequest = try endpoint.asURLRequest(config: fetchConfiguration())
             return session
                 .download(urlRequest)
+                .validate()
                 .publishData()
                 .tryMap { [weak self] response -> Data in
                     self?.logger.log(response, endpoint)
@@ -130,13 +132,14 @@ extension AFNetworkServiceCombine {
         let progressDataSubject = PassthroughSubject<(Progress, Data?), Error>()
         
         do {
-            let urlRequest = try endpoint.asURLRequest(config: configuration)
+            let urlRequest = try endpoint.asURLRequest(config: fetchConfiguration())
             let uploadRequest = try uploadMethod(urlRequest)
             
             uploadRequest
                 .uploadProgress { progress in
                     progressDataSubject.send((progress, nil))
                 }
+                .validate()
                 .response { response in
                     self.logger.log(response, endpoint)
                     switch response.result {

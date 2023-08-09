@@ -8,16 +8,16 @@ open class AFSessionManager: Session {
                                  retryProvider: RetryProviderProtocol? = nil,
                                  maxRetryCount: Int = 3) -> AFSessionManager {
         var adapter: HeadersAdapter?
-        var retrier: RetryPolicy?
+        var retrier: RetrayablePolicy?
         var interceptor: Interceptor?
         
         if let adaptHeaders = adaptHeaders {
             adapter = HeadersAdapter(adaptHeaders: adaptHeaders)
             if let retryProvider = retryProvider {
-                retrier = RetryPolicy(maxRetryCount: maxRetryCount,
-                                      retryProvider: retryProvider)
+                retrier = RetrayablePolicy(maxRetryCount: maxRetryCount,
+                                           retryProvider: retryProvider)
             }
-            interceptor = Interceptor(adapter: adapter!, retrier: retrier)
+            interceptor = Interceptor(adapter: adapter, retrier: retrier)
         }
         
         let session = AFSessionManager(configuration: URLSessionConfiguration.default,
