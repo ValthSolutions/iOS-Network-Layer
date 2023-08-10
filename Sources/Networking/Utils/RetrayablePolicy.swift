@@ -12,10 +12,9 @@ import NetworkInterface
 open class RetrayablePolicy: RequestRetrier {
     private let maxRetryCount: Int
     private let retryProvider: RetryProviderProtocol?
-    private var retryCount = [URL: Int]()
-    private var isRefreshingToken = false
-    private var requestsToRetry: [(RetryResult) -> Void] = []
-    
+    private var retryInfo = [URL: (count: Int, completions: [(RetryResult) -> Void])]()
+    private var urlsRefreshing = Set<URL>()
+
     init(maxRetryCount: Int, retryProvider: RetryProviderProtocol?) {
         self.maxRetryCount = maxRetryCount
         self.retryProvider = retryProvider
@@ -31,33 +30,34 @@ open class RetrayablePolicy: RequestRetrier {
             return
         }
         
-        if retryCount[url] == nil {
-            retryCount[url] = 0
+        if retryInfo[url] == nil {
+            retryInfo[url] = (count: 0, completions: [])
         }
 
-        guard let currentRetryCount = retryCount[url], currentRetryCount < maxRetryCount else {
+        guard let currentRetryInfo = retryInfo[url], currentRetryInfo.count < maxRetryCount else {
             completion(.doNotRetryWithError(error))
             return
         }
-        
-        if let retryProvider = retryProvider, !isRefreshingToken {
-            requestsToRetry.append(completion)
+
+        if let retryProvider = retryProvider, !urlsRefreshing.contains(url) {
+            retryInfo[url]?.completions.append(completion)
             
-            isRefreshingToken = true
+            urlsRefreshing.insert(url)
             retryProvider.retry(statusCode: response.statusCode) { [weak self] isSuccess in
-                guard let self else { return }
+                guard let self = self, let currentRetryInfo = self.retryInfo[url] else { return }
                 
-                isRefreshingToken = false
+                self.urlsRefreshing.remove(url)
+                
                 if isSuccess {
-                    self.retryCount[url] = (self.retryCount[url] ?? 0) + 1
-                    self.requestsToRetry.forEach { $0(.retry) }
+                    self.retryInfo[url]?.count += 1
+                    currentRetryInfo.completions.forEach { $0(.retry) }
                 } else {
-                    self.requestsToRetry.forEach { $0(.doNotRetryWithError(error)) }
+                    currentRetryInfo.completions.forEach { $0(.doNotRetryWithError(error)) }
                 }
-                self.requestsToRetry.removeAll()
+                self.retryInfo[url]?.completions.removeAll()
             }
-        } else if isRefreshingToken {
-            requestsToRetry.append(completion)
+        } else if urlsRefreshing.contains(url) {
+            retryInfo[url]?.completions.append(completion)
         } else {
             completion(.doNotRetryWithError(error))
         }

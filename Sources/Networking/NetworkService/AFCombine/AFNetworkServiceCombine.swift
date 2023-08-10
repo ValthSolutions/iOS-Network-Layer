@@ -148,7 +148,7 @@ extension AFNetworkServiceCombine {
                         progressDataSubject.send(completion: .finished)
                     case .failure(let error):
                         let data = response.data ?? Data()
-                        let statusCode = error.responseCode ?? 400
+                        let statusCode = error.responseCode ?? NetworkStatusCode.genericErrorCode.rawValue
                         let networkError = NetworkError.error(statusCode: statusCode, data: data)
                         progressDataSubject.send(completion: .failure(networkError))
                     }
