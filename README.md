@@ -107,14 +107,14 @@ open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
     
     private let session: Session
     private let logger: Loger
-    private let configuration: NetworkConfigurable
+    private let fetchConfiguration: () -> NetworkConfigurable
     
     public init(session: Session,
                 logger: Loger = DEBUGLog(),
-                configuration: NetworkConfigurable) {
+                fetchConfiguration: () -> NetworkConfigurable) {
         self.session = session
         self.logger = logger
-        self.configuration = configuration
+        self.fetchConfiguration = fetchConfiguration
     }
 }
 ```
