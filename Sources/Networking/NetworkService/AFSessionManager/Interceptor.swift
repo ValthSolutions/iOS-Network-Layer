@@ -9,10 +9,10 @@ import Foundation
 import Alamofire
 
 internal class Interceptor: Alamofire.RequestInterceptor {
-    private var adapter: RequestAdapter?
+    private var adapter: HeadersAdapter?
     private var retrier: RetrayablePolicy?
     
-    public init(adapter: RequestAdapter? = nil, retrier: RetrayablePolicy? = nil) {
+    public init(adapter: HeadersAdapter? = nil, retrier: RetrayablePolicy? = nil) {
         self.adapter = adapter
         self.retrier = retrier
     }
