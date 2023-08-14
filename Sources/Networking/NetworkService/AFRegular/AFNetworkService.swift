@@ -3,22 +3,25 @@ import Alamofire
 import Foundation
 import NetworkInterface
 
-open class AFNetworkService: AFNetworkServiceProtocol {
+open class AFNetworkService: AFReachableNetworkService, AFNetworkServiceProtocol {
     
     private let session: Session
     private let logger: Loger
-    private let configuration: NetworkConfigurable
-    
+    private let fetchConfiguration: () -> NetworkConfigurable
+
     public init(session: Session,
                 logger: Loger = DEBUGLog(),
-                configuration: NetworkConfigurable) {
+                fetchConfiguration: @escaping () -> NetworkConfigurable) {
         self.session = session
         self.logger = logger
-        self.configuration = configuration
+        self.fetchConfiguration = fetchConfiguration
     }
     
     open func request(endpoint: Requestable) async throws -> Data {
-        let urlRequest = try endpoint.asURLRequest(config: configuration)
+        guard isInternetAvailable() else {
+            throw NetworkError.notConnectedToInternet
+        }
+        let urlRequest = try endpoint.asURLRequest(config: fetchConfiguration())
         let response = session.request(urlRequest).serializingData()
         await logger.log(response.response, endpoint)
         
@@ -39,7 +42,10 @@ open class AFNetworkService: AFNetworkServiceProtocol {
     }
     
     open func download(endpoint: Requestable) async throws -> Data {
-        let urlRequest = try endpoint.asURLRequest(config: configuration)
+        guard isInternetAvailable() else {
+            throw NetworkError.notConnectedToInternet
+        }
+        let urlRequest = try endpoint.asURLRequest(config: fetchConfiguration())
         let response = session.download(urlRequest).serializingData()
         await logger.log(response.response, endpoint)
         
@@ -60,6 +66,9 @@ open class AFNetworkService: AFNetworkServiceProtocol {
     }
     
     open func upload(_ data: Data, to url: URL) async throws -> Progress {
+        guard isInternetAvailable() else {
+            throw NetworkError.notConnectedToInternet
+        }
         return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Progress, Error>) in
             self.session.upload(data, to: url).uploadProgress(closure: { progress in
                 continuation.resume(returning: progress)
@@ -83,6 +92,9 @@ open class AFNetworkService: AFNetworkServiceProtocol {
     
     open func upload(multipartFormData: @escaping (MultipartFormData) -> Void,
                      to url: URL) async throws -> Progress {
+        guard isInternetAvailable() else {
+            throw NetworkError.notConnectedToInternet
+        }
         return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Progress, Error>) in
             self.session.upload(multipartFormData: multipartFormData, to: url).uploadProgress(closure: { progress in
                 continuation.resume(returning: progress)
