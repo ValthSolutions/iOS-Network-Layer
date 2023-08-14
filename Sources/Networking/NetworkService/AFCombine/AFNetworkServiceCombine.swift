@@ -3,25 +3,30 @@ import Foundation
 import NetworkInterface
 import Combine
 
-open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
+open class AFNetworkServiceCombine: AFReachableNetworkService,
+                                    AFNetworkServiceCombineProtocol {
     
     private let session: Session
     private let logger: Loger
-    private let configuration: NetworkConfigurable
+    private let fetchConfiguration: () -> NetworkConfigurable
     
     public init(session: Session,
                 logger: Loger = DEBUGLog(),
-                configuration: NetworkConfigurable) {
+                fetchConfiguration: @escaping () -> NetworkConfigurable) {
         self.session = session
         self.logger = logger
-        self.configuration = configuration
+        self.fetchConfiguration = fetchConfiguration
     }
     
     open func request(endpoint: Requestable) -> AnyPublisher<Data, Error> {
+        guard isInternetAvailable() else {
+            return Fail(error: NetworkError.notConnectedToInternet).eraseToAnyPublisher()
+        }
         do {
-            let urlRequest = try endpoint.asURLRequest(config: configuration)
+            let urlRequest = try endpoint.asURLRequest(config: fetchConfiguration())
             return session
                 .request(urlRequest)
+                .validate()
                 .publishData()
                 .tryMap { [weak self] response -> Data in
                     self?.logger.log(response, endpoint)
@@ -41,15 +46,7 @@ open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
                     }
                 }
                 .mapError { error -> Error in
-                    if let afError = error as? AFError {
-                        if let underlyingError = afError.underlyingError as NSError?,
-                           underlyingError.domain == NSURLErrorDomain,
-                           underlyingError.code == NSURLErrorNotConnectedToInternet {
-                            return NetworkError.notConnectedToInternet
-                        } else {
-                            return NetworkError.generic(error)
-                        }
-                    } else if let networkError = error as? NetworkError {
+                    if let networkError = error as? NetworkError {
                         return networkError
                     } else {
                         return NetworkError.generic(error)
@@ -62,10 +59,14 @@ open class AFNetworkServiceCombine: AFNetworkServiceCombineProtocol {
     }
     
     open func download(endpoint: Requestable) -> AnyPublisher<Data, Error> {
+        guard isInternetAvailable() else {
+            return Fail(error: NetworkError.notConnectedToInternet).eraseToAnyPublisher()
+        }
         do {
-            let urlRequest = try endpoint.asURLRequest(config: configuration)
+            let urlRequest = try endpoint.asURLRequest(config: fetchConfiguration())
             return session
                 .download(urlRequest)
+                .validate()
                 .publishData()
                 .tryMap { [weak self] response -> Data in
                     self?.logger.log(response, endpoint)
@@ -125,16 +126,20 @@ extension AFNetworkServiceCombine {
         endpoint: Requestable,
         uploadMethod: (URLRequest) throws -> UploadRequest
     ) -> AnyPublisher<(Progress, Data?), Error> {
+        guard isInternetAvailable() else {
+            return Fail(error: NetworkError.notConnectedToInternet).eraseToAnyPublisher()
+        }
         let progressDataSubject = PassthroughSubject<(Progress, Data?), Error>()
         
         do {
-            let urlRequest = try endpoint.asURLRequest(config: configuration)
+            let urlRequest = try endpoint.asURLRequest(config: fetchConfiguration())
             let uploadRequest = try uploadMethod(urlRequest)
             
             uploadRequest
                 .uploadProgress { progress in
                     progressDataSubject.send((progress, nil))
                 }
+                .validate()
                 .response { response in
                     self.logger.log(response, endpoint)
                     switch response.result {
@@ -142,15 +147,10 @@ extension AFNetworkServiceCombine {
                         progressDataSubject.send((Progress(totalUnitCount: 1), data))
                         progressDataSubject.send(completion: .finished)
                     case .failure(let error):
-                        if let underlyingError = error.underlyingError as? URLError,
-                           underlyingError.code == .notConnectedToInternet {
-                            progressDataSubject.send(completion: .failure(NetworkError.notConnectedToInternet))
-                        } else {
-                            let data = response.data ?? Data()
-                            let statusCode = error.responseCode ?? 400
-                            let networkError = NetworkError.error(statusCode: statusCode, data: data)
-                            progressDataSubject.send(completion: .failure(networkError))
-                        }
+                        let data = response.data ?? Data()
+                        let statusCode = error.responseCode ?? NetworkStatusCode.genericErrorCode.rawValue
+                        let networkError = NetworkError.error(statusCode: statusCode, data: data)
+                        progressDataSubject.send(completion: .failure(networkError))
                     }
                 }
         } catch {

@@ -64,7 +64,8 @@ public enum NetworkStatusCode: Int {
     case multiStatus = 207
     case alreadyReported = 208
     case imUsed = 226
-    
+    case genericErrorCode = 400
+
     public var isAcceptable: Bool {
         return (200...299).contains(rawValue)
     }

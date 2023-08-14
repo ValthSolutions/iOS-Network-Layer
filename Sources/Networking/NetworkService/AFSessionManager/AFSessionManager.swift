@@ -4,16 +4,16 @@ import NetworkInterface
 
 open class AFSessionManager: Session {
     
-    public static func `default`(adaptHeaders: ((inout [String: String]) -> Void)?) -> AFSessionManager {
-        var interceptor: Interceptor?
-        var adapter: HeadersAdapter?
+    public static func `default`(retryProvider: RetryProviderProtocol? = nil,
+                                 maxRetryCount: Int = 3,
+                                 headersAdapter: HeadersAdapter?
+    ) -> AFSessionManager {
         
-        if let adaptHeaders = adaptHeaders {
-            adapter = HeadersAdapter(adaptHeaders: adaptHeaders)
-            interceptor = Interceptor(adapter: adapter!)
-        }
-        
-        let session = AFSessionManager(configuration: URLSessionConfiguration.default, interceptor: interceptor)
+        let retrier = retryProvider.flatMap { RetrayablePolicy(maxRetryCount: maxRetryCount,
+                                                               retryProvider: $0) }
+        let interceptor: Interceptor? = (headersAdapter != nil || retrier != nil) ? Interceptor(adapter: headersAdapter, retrier: retrier) : nil 
+        let session = AFSessionManager(configuration: URLSessionConfiguration.default,
+                                       interceptor: interceptor)
         return session
     }
 }
