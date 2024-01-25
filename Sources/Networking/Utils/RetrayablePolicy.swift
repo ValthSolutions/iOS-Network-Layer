@@ -1,6 +1,6 @@
 //
 //  File.swift
-//  
+//
 //
 //  Created by LEMIN DAHOVICH on 28.02.2023.
 //
@@ -14,12 +14,12 @@ open class RetrayablePolicy: RequestRetrier {
     private let retryProvider: RetryProviderProtocol?
     private var retryInfo = [URL: (count: Int, completions: [(RetryResult) -> Void])]()
     private var urlsRefreshing = Set<URL>()
-
+    
     init(maxRetryCount: Int, retryProvider: RetryProviderProtocol?) {
         self.maxRetryCount = maxRetryCount
         self.retryProvider = retryProvider
     }
-
+    
     public func retry(_ request: Request,
                       for session: Session,
                       dueTo error: Error,
@@ -33,12 +33,18 @@ open class RetrayablePolicy: RequestRetrier {
         if retryInfo[url] == nil {
             retryInfo[url] = (count: 0, completions: [])
         }
-
-        guard let currentRetryInfo = retryInfo[url], currentRetryInfo.count < maxRetryCount else {
+        
+        guard let currentRetryInfo = retryInfo[url] else {
             completion(.doNotRetryWithError(error))
             return
         }
-
+        
+        if currentRetryInfo.count >= maxRetryCount {
+            NotificationCenter.default.post(name: .maxRetryCountReached, object: nil, userInfo: ["url": url])
+            completion(.doNotRetryWithError(error))
+            return
+        }
+        
         if let retryProvider = retryProvider, !urlsRefreshing.contains(url) {
             retryInfo[url]?.completions.append(completion)
             
