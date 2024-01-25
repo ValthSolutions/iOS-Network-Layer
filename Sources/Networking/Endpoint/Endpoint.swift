@@ -1,10 +1,3 @@
-//
-//  File.swift
-//  
-//
-//  Created by LEMIN DAHOVICH on 28.02.2023.
-//
-
 import Foundation
 import NetworkInterface
 import Alamofire
@@ -22,7 +15,6 @@ open class Endpoint<R>: ResponseRequestable {
     public var bodyArrayEncodable: [AnyEncodable]?
     public var bodyParameters: [String: Any]
     public var bodyEncoding: BodyEncoding
-    public var responseDecoder: ResponseDecoder
     
     public init(path: String,
                 isFullPath: Bool = false,
@@ -33,9 +25,7 @@ open class Endpoint<R>: ResponseRequestable {
                 bodyParametersEncodable: Encodable? = nil,
                 bodyArrayEncodable: [AnyEncodable]? = nil,
                 bodyParameters: [String: Any] = [:],
-                bodyEncoding: BodyEncoding = .jsonSerializationData,
-                keyPath: String? = nil) {
-        let responseDecoder = keyPath != nil ? JSONResponseDecoder(keyPath!) : JSONResponseDecoder()
+                bodyEncoding: BodyEncoding = .jsonSerializationData) {
         self.path = path
         self.isFullPath = isFullPath
         self.method = method
@@ -46,20 +36,19 @@ open class Endpoint<R>: ResponseRequestable {
         self.bodyParameters = bodyParameters
         self.bodyArrayEncodable = bodyArrayEncodable
         self.bodyEncoding = bodyEncoding
-        self.responseDecoder = responseDecoder
     }
 }
 
 extension Requestable {
     
-    public func asURLRequest(config: NetworkConfigurable) throws -> URLRequest {
-        let url = try self.url(with: config)
+    public func asURLRequest(config: NetworkConfigurable, encoder: JSONEncoder) throws -> URLRequest {
+        let url = try self.url(with: config, encoder: encoder)
         
         var urlRequest = URLRequest(url: url)
         var allHeaders: [String: String] = config.headers
         headerParameters.forEach { allHeaders.updateValue($1, forKey: $0) }
         
-        let bodyParameters = try bodyParametersEncodable?.toDictionary() ?? self.bodyParameters
+        let bodyParameters = try bodyParametersEncodable?.toDictionary(encoder: encoder) ?? self.bodyParameters
         
         if let bodyArray = bodyArrayEncodable {
             let jsonEncoder = JSONEncoder()
@@ -76,14 +65,14 @@ extension Requestable {
         return urlRequest
     }
     
-    private func url(with config: NetworkConfigurable) throws -> URL {
+    private func url(with config: NetworkConfigurable, encoder: JSONEncoder) throws -> URL {
         let baseURL = config.baseURL.absoluteString.last != "/" ? config.baseURL.absoluteString + "/" : config.baseURL.absoluteString
         let endpoint = isFullPath ? path : baseURL.appending(path)
         
         guard var urlComponents = URLComponents(string: endpoint) else { throw RequestGenerationError.components }
         var urlQueryItems = [URLQueryItem]()
         
-        let queryParameters = try queryParametersEncodable?.toDictionary() ?? self.queryParameters
+        let queryParameters = try queryParametersEncodable?.toDictionary(encoder: encoder) ?? self.queryParameters
         
         queryParameters.forEach {
             urlQueryItems.append(URLQueryItem(name: $0.key, value: "\($0.value)"))
@@ -106,21 +95,5 @@ extension Requestable {
         case .stringEncodingAscii:
             return bodyParamaters.queryString.data(using: String.Encoding.ascii, allowLossyConversion: true)
         }
-    }
-}
-
-private extension Dictionary {
-    var queryString: String {
-        return self.map { "\($0.key)=\($0.value)" }
-            .joined(separator: "&")
-            .addingPercentEncoding(withAllowedCharacters: NSCharacterSet.urlQueryAllowed) ?? ""
-    }
-}
-
-private extension Encodable {
-    func toDictionary() throws -> [String: Any]? {
-        let data = try JSONEncoder().encode(self)
-        let josnData = try JSONSerialization.jsonObject(with: data)
-        return josnData as? [String: Any]
     }
 }

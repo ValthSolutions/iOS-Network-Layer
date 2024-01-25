@@ -1,10 +1,3 @@
-//
-//  File.swift
-//  
-//
-//  Created by LEMIN DAHOVICH on 01.03.2023.
-//
-
 import Foundation
 import Alamofire
 
@@ -40,8 +33,6 @@ public enum BodyEncoding {
 
 public protocol ResponseRequestable: Requestable {
     associatedtype Response
-    
-    var responseDecoder: ResponseDecoder { get }
 }
 
 public protocol ResponseDecoder {

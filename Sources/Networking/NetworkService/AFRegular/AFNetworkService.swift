@@ -5,15 +5,18 @@ import NetworkInterface
 
 open class AFNetworkService: AFReachableNetworkService, AFNetworkServiceProtocol {
     
+    public let encoder: JSONEncoder
     private let session: Session
     private let logger: Loger
     private let fetchConfiguration: () -> NetworkConfigurable
 
     public init(session: Session,
                 logger: Loger = DEBUGLog(),
+                encoder: JSONEncoder,
                 fetchConfiguration: @escaping () -> NetworkConfigurable) {
         self.session = session
         self.logger = logger
+        self.encoder = encoder
         self.fetchConfiguration = fetchConfiguration
     }
     
@@ -21,8 +24,8 @@ open class AFNetworkService: AFReachableNetworkService, AFNetworkServiceProtocol
         guard isInternetAvailable() else {
             throw NetworkError.notConnectedToInternet
         }
-        let urlRequest = try endpoint.asURLRequest(config: fetchConfiguration())
-        let response = session.request(urlRequest).serializingData()
+        let urlRequest = try endpoint.asURLRequest(config: fetchConfiguration(), encoder: encoder)
+        let response = session.request(urlRequest).validate().serializingData()
         await logger.log(response.response, endpoint)
         
         switch await response.result {
@@ -45,7 +48,7 @@ open class AFNetworkService: AFReachableNetworkService, AFNetworkServiceProtocol
         guard isInternetAvailable() else {
             throw NetworkError.notConnectedToInternet
         }
-        let urlRequest = try endpoint.asURLRequest(config: fetchConfiguration())
+        let urlRequest = try endpoint.asURLRequest(config: fetchConfiguration(), encoder: encoder)
         let response = session.download(urlRequest).serializingData()
         await logger.log(response.response, endpoint)
         

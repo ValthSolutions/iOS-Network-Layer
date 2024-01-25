@@ -11,16 +11,20 @@ import NetworkInterface
 
 open class AFDataTransferService: DataTransferService, AFDataTransferServiceProtocol {
     
+    public var decoder: ResponseDecoder
     private let networkService: AFNetworkServiceProtocol
     
-    public init(with networkService: AFNetworkServiceProtocol) {
+    public init(with networkService: AFNetworkServiceProtocol,
+                decoder: ResponseDecoder
+    ) {
         self.networkService = networkService
+        self.decoder = decoder
     }
     
     open func request<T, E>(_ endpoint: E) async throws -> T where T: Decodable, T == E.Response, E: ResponseRequestable {
         let responseData = try await networkService.request(endpoint: endpoint)
         do {
-            let decodedData: T = try decode(data: responseData, decoder: endpoint.responseDecoder)
+            let decodedData: T = try decode(data: responseData, decoder: decoder)
             return decodedData
         } catch let error {
             throw DataTransferError.parsing(error)
@@ -30,7 +34,7 @@ open class AFDataTransferService: DataTransferService, AFDataTransferServiceProt
     open func download<T: Decodable, E: ResponseRequestable>(_ endpoint: E) async throws -> T {
         let responseData = try await networkService.download(endpoint: endpoint)
         do {
-            let decodedData: T = try decode(data: responseData, decoder: endpoint.responseDecoder)
+            let decodedData: T = try decode(data: responseData, decoder: decoder)
             return decodedData
         } catch let error {
             throw DataTransferError.parsing(error)
