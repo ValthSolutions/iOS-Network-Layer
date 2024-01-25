@@ -1,13 +1,10 @@
-//
-//  File.swift
-//
-//
-//  Created by LEMIN DAHOVICH on 28.02.2023.
-//
-
 import Foundation
 import Alamofire
 import NetworkInterface
+
+extension Notification.Name {
+    public static let maxRetryCountReached = Notification.Name("maxRetryCountReached")
+}
 
 open class RetrayablePolicy: RequestRetrier {
     private let maxRetryCount: Int
