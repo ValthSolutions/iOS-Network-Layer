@@ -9,6 +9,14 @@ import Foundation
 import Combine
 import Alamofire
 
+public typealias StreamDataHandler<T: Decodable> = (StreamEvent<T>) -> Void
+public typealias DataParsingClosure = (String) -> [String]?
+
+public enum StreamEvent<T> {
+    case data(Result<T, Error>)
+    case completed(Error?)
+}
+
 public protocol AFDataTransferServiceCombineProtocol {
     func download<T, E>(_ endpoint: E) -> AnyPublisher<T, DataTransferError> where T: Decodable, T == E.Response, E: ResponseRequestable
     func request<T, E>(_ endpoint: E) -> AnyPublisher<T, DataTransferError> where T: Decodable, T == E.Response, E: ResponseRequestable
@@ -20,6 +28,7 @@ public protocol AFDataTransferServiceCombineProtocol {
 }
 
 public protocol AFDataTransferServiceProtocol {
+    func streamRequest<E, T>(_ endpoint: E, parser: DataParsingClosure?, onData: @escaping StreamDataHandler<T>) async throws where T: Decodable, T == E.Response, E: ResponseRequestable
     func request<T, E>(_ endpoint: E) async throws -> T where T: Decodable, T == E.Response, E: ResponseRequestable
     func download<T: Decodable, E: ResponseRequestable>(_ endpoint: E) async throws -> T
     func upload(_ value: String, url: URL) async throws -> Progress

@@ -9,6 +9,54 @@ public struct DEBUGLog: Loger {
     
     public init() {}
     
+    public func log(_ data: Data?) {
+        if let data = data {
+            if let jsonString = String(data: data, encoding: .utf8) {
+                if let jsonData = parse(jsonString)?.data(using: .utf8) {
+                    jsonResponse(jsonData)
+                }
+            }
+        }
+    }
+    
+    public func logStreamChunk(_ result: Result<Data, Never>) {
+        switch result {
+        case .success(let data):
+            if let jsonString = String(data: data, encoding: .utf8) {
+                if let jsonData = parse(jsonString)?.data(using: .utf8) {
+                    jsonResponse(jsonData)
+                }
+            }
+            
+        case .failure:
+            print("📕 Stream Failed")
+        }
+    }
+    
+    public func logRequestInitiation(_ request: URLRequest?) {
+        guard let request = request else { return }
+        print("🚀 Stream Request Initiated:", request.url?.absoluteString ?? "Unknown URL")
+    }
+    
+    public func logStreamCompletion(_ completion: DataStreamRequest.Completion) {
+        print("🏁 Stream Request Completed")
+        
+        if let request = completion.request {
+            print("📘 Request:", request.url?.absoluteString ?? "Unknown URL")
+        }
+        if let response = completion.response {
+            print("📗 Response:", response)
+        }
+        
+        metrics(completion.metrics)
+        
+        if let error = completion.error {
+            print("📕 Error:", error.localizedDescription)
+        } else {
+            print("✅ Success")
+        }
+    }
+    
     public func log<T>(_ response: AFDataResponse<T?>,
                        _ config: Requestable? = nil) {
         divider()
@@ -143,6 +191,17 @@ public struct DEBUGLog: Loger {
         } else {
             print("📙 Duration:", empty, separator: separator)
         }
+    }
+    
+    fileprivate func parse(_ data: String) -> String? {
+        let components = data.split(separator: "\n", omittingEmptySubsequences: true)
+        for component in components {
+            let parts = component.split(separator: ":", maxSplits: 1, omittingEmptySubsequences: true)
+            if parts.count == 2, parts[0].trimmingCharacters(in: .whitespacesAndNewlines) == "data" {
+                return String(parts[1].trimmingCharacters(in: .whitespacesAndNewlines))
+            }
+        }
+        return nil
     }
     
     fileprivate func jsonResponse(_ data: Data?) {

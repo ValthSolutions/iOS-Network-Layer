@@ -1,7 +1,15 @@
-
 import Alamofire
 import Foundation
 import NetworkInterface
+
+extension LogLevel {
+    public var logger: Loger {
+        switch self {
+        case .debug: DEBUGLog()
+        case .release: RELEASELog()
+        }
+    }
+}
 
 open class AFNetworkService: AFReachableNetworkService, AFNetworkServiceProtocol {
     
@@ -9,15 +17,37 @@ open class AFNetworkService: AFReachableNetworkService, AFNetworkServiceProtocol
     private let session: Session
     private let logger: Loger
     private let fetchConfiguration: () -> NetworkConfigurable
-
+    
     public init(session: Session,
-                logger: Loger = DEBUGLog(),
+                logLevel: LogLevel = .debug,
                 encoder: JSONEncoder,
                 fetchConfiguration: @escaping () -> NetworkConfigurable) {
         self.session = session
-        self.logger = logger
+        self.logger = logLevel.logger
         self.encoder = encoder
         self.fetchConfiguration = fetchConfiguration
+    }
+    
+    // MARK: - Stream
+    open func streamRequest(endpoint: Requestable) async throws -> DataStreamRequest {
+        guard isInternetAvailable() else {
+            throw NetworkError.notConnectedToInternet
+        }
+        let urlRequest = try endpoint.asURLRequest(config: fetchConfiguration(), encoder: encoder)
+        let streamRequest = session.streamRequest(urlRequest)
+        
+        logger.logRequestInitiation(urlRequest)
+        
+        streamRequest.responseStream { [weak self] stream in
+            switch stream.event {
+            case .stream(let data):
+                self?.logger.logStreamChunk(data)
+                
+            case .complete(let completion):
+                self?.logger.logStreamCompletion(completion)
+            }
+        }
+        return streamRequest
     }
     
     open func request(endpoint: Requestable) async throws -> Data {
