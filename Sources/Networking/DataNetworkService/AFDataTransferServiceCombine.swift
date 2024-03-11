@@ -1,6 +1,6 @@
 //
 //  File.swift
-//  
+//
 //
 //  Created by LEMIN DAHOVICH on 01.03.2023.
 //
@@ -12,14 +12,17 @@ import NetworkInterface
 
 open class AFDataTransferServiceCombine: DataTransferService, AFDataTransferServiceCombineProtocol {
     
+    public let decoder: ResponseDecoder
     private let networkService: AFNetworkServiceCombineProtocol
     private let errorAdapter: IErrorAdapter
     private var cancellables = Set<AnyCancellable>()
     
     public init(with networkService: AFNetworkServiceCombineProtocol,
+                decoder: ResponseDecoder,
                 errorAdapter: IErrorAdapter) {
         self.networkService = networkService
         self.errorAdapter = errorAdapter
+        self.decoder = decoder
     }
     
     open func request<T, E>(_ endpoint: E) -> AnyPublisher<T, DataTransferError>
@@ -27,9 +30,9 @@ open class AFDataTransferServiceCombine: DataTransferService, AFDataTransferServ
         return networkService.request(endpoint: endpoint)
             .tryMap { data -> T in
                 if data.isEmpty && T.self == EmptyDTO.self {
-                       return EmptyDTO() as! T
-                   } else {
-                    let result: T = try self.decode(data: data, decoder: endpoint.responseDecoder)
+                    return EmptyDTO() as! T
+                } else {
+                    let result: T = try self.decode(data: data, decoder: self.decoder)
                     return result
                 }
             }
@@ -58,7 +61,7 @@ open class AFDataTransferServiceCombine: DataTransferService, AFDataTransferServ
     where T: Decodable, T == E.Response, E: ResponseRequestable {
         return networkService.download(endpoint: endpoint)
             .tryMap { data -> T in
-                let result: T = try self.decode(data: data, decoder: endpoint.responseDecoder)
+                let result: T = try self.decode(data: data, decoder: self.decoder)
                 return result
             }
             .mapError { error -> DataTransferError in
@@ -135,12 +138,12 @@ extension AFDataTransferServiceCombine {
     where T: Decodable, T == E.Response, E: ResponseRequestable {
         
         response
-            .sink(receiveCompletion: { _ in }) { (progress, data) in
+            .sink(receiveCompletion: { _ in }) { [weak self] (progress, data) in
                 progressSubject.send(progress)
-                
+                guard let self else { return }
                 if let data = data {
                     do {
-                        let result: T = try self.decode(data: data, decoder: endpoint.responseDecoder)
+                        let result: T = try self.decode(data: data, decoder: decoder)
                         dataSubject.send(result)
                     } catch {
                         dataSubject.send(completion: .failure(.parsing(error)))

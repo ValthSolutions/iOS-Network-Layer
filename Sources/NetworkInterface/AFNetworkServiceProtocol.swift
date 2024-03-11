@@ -19,6 +19,8 @@ public protocol AFNetworkServiceCombineProtocol {
 }
 
 public protocol AFNetworkServiceProtocol {
+    var encoder: JSONEncoder { get }
+    func streamRequest(endpoint: Requestable) async throws -> DataStreamRequest
     func request(endpoint: Requestable) async throws -> Data
     func download(endpoint: Requestable) async throws -> Data
     func upload(_ data: Data, to url: URL) async throws -> Progress

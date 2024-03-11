@@ -5,16 +5,18 @@ import Combine
 
 open class AFNetworkServiceCombine: AFReachableNetworkService,
                                     AFNetworkServiceCombineProtocol {
-    
+    public let encoder: JSONEncoder
     private let session: Session
     private let logger: Loger
     private let fetchConfiguration: () -> NetworkConfigurable
     
     public init(session: Session,
                 logger: Loger = DEBUGLog(),
+                encoder: JSONEncoder,
                 fetchConfiguration: @escaping () -> NetworkConfigurable) {
         self.session = session
         self.logger = logger
+        self.encoder = encoder
         self.fetchConfiguration = fetchConfiguration
     }
     
@@ -23,7 +25,7 @@ open class AFNetworkServiceCombine: AFReachableNetworkService,
             return Fail(error: NetworkError.notConnectedToInternet).eraseToAnyPublisher()
         }
         do {
-            let urlRequest = try endpoint.asURLRequest(config: fetchConfiguration())
+            let urlRequest = try endpoint.asURLRequest(config: fetchConfiguration(), encoder: encoder)
             return session
                 .request(urlRequest)
                 .validate()
@@ -63,7 +65,7 @@ open class AFNetworkServiceCombine: AFReachableNetworkService,
             return Fail(error: NetworkError.notConnectedToInternet).eraseToAnyPublisher()
         }
         do {
-            let urlRequest = try endpoint.asURLRequest(config: fetchConfiguration())
+            let urlRequest = try endpoint.asURLRequest(config: fetchConfiguration(), encoder: encoder)
             return session
                 .download(urlRequest)
                 .validate()
@@ -132,7 +134,7 @@ extension AFNetworkServiceCombine {
         let progressDataSubject = PassthroughSubject<(Progress, Data?), Error>()
         
         do {
-            let urlRequest = try endpoint.asURLRequest(config: fetchConfiguration())
+            let urlRequest = try endpoint.asURLRequest(config: fetchConfiguration(), encoder: encoder)
             let uploadRequest = try uploadMethod(urlRequest)
             
             uploadRequest

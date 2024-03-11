@@ -1,28 +1,52 @@
-
 import Alamofire
 import Foundation
 import NetworkInterface
 
 open class AFNetworkService: AFReachableNetworkService, AFNetworkServiceProtocol {
     
+    public let encoder: JSONEncoder
     private let session: Session
     private let logger: Loger
     private let fetchConfiguration: () -> NetworkConfigurable
-
+    
     public init(session: Session,
-                logger: Loger = DEBUGLog(),
+                logLevel: LogLevel = .debug,
+                encoder: JSONEncoder,
                 fetchConfiguration: @escaping () -> NetworkConfigurable) {
         self.session = session
-        self.logger = logger
+        self.logger = logLevel.logger
+        self.encoder = encoder
         self.fetchConfiguration = fetchConfiguration
+    }
+    
+    // MARK: - Stream
+    open func streamRequest(endpoint: Requestable) async throws -> DataStreamRequest {
+        guard isInternetAvailable() else {
+            throw NetworkError.notConnectedToInternet
+        }
+        let urlRequest = try endpoint.asURLRequest(config: fetchConfiguration(), encoder: encoder)
+        let streamRequest = session.streamRequest(urlRequest)
+        
+        logger.logRequestInitiation(urlRequest)
+        
+        streamRequest.responseStream { [weak self] stream in
+            switch stream.event {
+            case .stream(let data):
+                self?.logger.logStreamChunk(data)
+                
+            case .complete(let completion):
+                self?.logger.logStreamCompletion(completion)
+            }
+        }
+        return streamRequest
     }
     
     open func request(endpoint: Requestable) async throws -> Data {
         guard isInternetAvailable() else {
             throw NetworkError.notConnectedToInternet
         }
-        let urlRequest = try endpoint.asURLRequest(config: fetchConfiguration())
-        let response = session.request(urlRequest).serializingData()
+        let urlRequest = try endpoint.asURLRequest(config: fetchConfiguration(), encoder: encoder)
+        let response = session.request(urlRequest).validate().serializingData()
         await logger.log(response.response, endpoint)
         
         switch await response.result {
@@ -45,7 +69,7 @@ open class AFNetworkService: AFReachableNetworkService, AFNetworkServiceProtocol
         guard isInternetAvailable() else {
             throw NetworkError.notConnectedToInternet
         }
-        let urlRequest = try endpoint.asURLRequest(config: fetchConfiguration())
+        let urlRequest = try endpoint.asURLRequest(config: fetchConfiguration(), encoder: encoder)
         let response = session.download(urlRequest).serializingData()
         await logger.log(response.response, endpoint)
         

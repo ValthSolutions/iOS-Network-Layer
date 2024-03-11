@@ -8,7 +8,7 @@
 import Foundation
 import Alamofire
 
-internal class Interceptor: Alamofire.RequestInterceptor {
+public class Interceptor: Alamofire.RequestInterceptor {
     private var adapter: HeadersAdapter?
     private var retrier: RetrayablePolicy?
     
