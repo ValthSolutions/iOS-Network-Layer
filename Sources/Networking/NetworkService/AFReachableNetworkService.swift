@@ -10,7 +10,9 @@ import Alamofire
 open class AFReachableNetworkService {
     let reachabilityManager = NetworkReachabilityManager()
     
-    func isInternetAvailable() -> Bool {
+    public init() { }
+    
+    public func isInternetAvailable() -> Bool {
         return ((reachabilityManager?.isReachable) != nil)
     }
 }

@@ -11,7 +11,7 @@ open class AFSessionManager: Session {
         
         let retrier = retryProvider.flatMap { RetrayablePolicy(maxRetryCount: maxRetryCount,
                                                                retryProvider: $0) }
-        let interceptor: Interceptor? = (headersAdapter != nil || retrier != nil) ? Interceptor(adapter: headersAdapter, retrier: retrier) : nil 
+        let interceptor: Interceptor? = Interceptor(adapter: headersAdapter, retrier: retrier)
         let session = AFSessionManager(configuration: URLSessionConfiguration.default,
                                        interceptor: interceptor)
         return session
