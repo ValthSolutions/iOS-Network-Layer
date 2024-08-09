@@ -114,25 +114,22 @@ open class AFNetworkService: AFReachableNetworkService, AFNetworkServiceProtocol
         }
     }
     
-    open func upload(multipartFormData: @escaping (MultipartFormData) -> Void,
-                     to url: URL) async throws -> Progress {
+    open func upload(multipartFormData: @escaping (MultipartFormData) -> Void, to url: URL) async throws -> Data? {
         guard isInternetAvailable() else {
             throw NetworkError.notConnectedToInternet
         }
-        return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Progress, Error>) in
-            self.session.upload(multipartFormData: multipartFormData, to: url).uploadProgress(closure: { progress in
-                continuation.resume(returning: progress)
-            }).response { response in
+        
+        return try await withCheckedThrowingContinuation { continuation in
+            self.session.upload(multipartFormData: multipartFormData, to: url).response { response in
                 switch response.result {
-                case .success(_):
-                    break
+                case .success(let data):
+                    continuation.resume(returning: data)
                 case .failure(let error):
-                    switch true {
-                    case error.isExplicitlyCancelledError:
+                    if error.isExplicitlyCancelledError {
                         continuation.resume(throwing: NetworkError.cancelled)
-                    case error.isSessionTaskError || error.isResponseValidationError:
+                    } else if error.isSessionTaskError || error.isResponseValidationError {
                         continuation.resume(throwing: NetworkError.generic(error))
-                    default:
+                    } else {
                         let statusCode = response.response?.statusCode ?? -1
                         let data = response.data ?? Data()
                         continuation.resume(throwing: NetworkError.error(statusCode: statusCode, data: data))
