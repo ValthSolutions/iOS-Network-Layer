@@ -87,11 +87,14 @@ open class AFDataTransferService: DataTransferService, AFDataTransferServiceProt
         }
     }
     
-    open func upload(multipartFormData: @escaping (MultipartFormData) -> Void,
-                     to url: URL) async throws -> Progress {
+    open func upload<T>(multipartFormData: @escaping (Alamofire.MultipartFormData) -> Void,
+                        to url: URL) async throws -> T where T : Decodable {
         do {
-            let progress = try await networkService.upload(multipartFormData: multipartFormData, to: url)
-            return progress
+            let responseData = try await networkService.upload(multipartFormData: multipartFormData, to: url)
+
+            let decodedData: T = try self.decode(data: responseData ?? Data(), decoder: self.decoder)
+            
+            return decodedData
         } catch let error {
             throw DataTransferError.resolvedNetworkFailure(error)
         }

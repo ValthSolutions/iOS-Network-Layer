@@ -32,8 +32,8 @@ public protocol AFDataTransferServiceProtocol {
     func request<T, E>(_ endpoint: E) async throws -> T where T: Decodable, T == E.Response, E: ResponseRequestable
     func download<T: Decodable, E: ResponseRequestable>(_ endpoint: E) async throws -> T
     func upload(_ value: String, url: URL) async throws -> Progress
-    func upload(multipartFormData: @escaping (MultipartFormData) -> Void,
-                to url: URL) async throws -> Progress
+    func upload<T: Decodable>(multipartFormData: @escaping (MultipartFormData) -> Void,
+                to url: URL) async throws -> T
 }
 
 public enum DataTransferError: Error {
