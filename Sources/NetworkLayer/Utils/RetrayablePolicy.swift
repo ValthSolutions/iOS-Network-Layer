@@ -1,6 +1,6 @@
 import Foundation
 import Alamofire
-import NetworkInterface
+import INetwork
 
 extension Notification.Name {
     public static let maxRetryCountReached = Notification.Name("maxRetryCountReached")

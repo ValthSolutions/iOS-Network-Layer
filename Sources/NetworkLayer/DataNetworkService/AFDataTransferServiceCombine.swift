@@ -8,7 +8,7 @@
 import Foundation
 import Alamofire
 import Combine
-import NetworkInterface
+import INetwork
 
 open class AFDataTransferServiceCombine: DataTransferService, AFDataTransferServiceCombineProtocol {
     
@@ -51,7 +51,7 @@ open class AFDataTransferServiceCombine: DataTransferService, AFDataTransferServ
                     AFError.responseSerializationFailed(reason: _):
                     return .resolvedNetworkFailure(error)
                 default:
-                    return .networkFailure(.unknown)
+                    return .networkFailure(.connectionError(underlying: error))
                 }
             }
             .eraseToAnyPublisher()
@@ -79,7 +79,7 @@ open class AFDataTransferServiceCombine: DataTransferService, AFDataTransferServ
                     AFError.responseSerializationFailed(reason: _):
                     return .resolvedNetworkFailure(error)
                 default:
-                    return .networkFailure(.unknown)
+                    return .networkFailure(.connectionError(underlying: error))
                 }
             }
             .eraseToAnyPublisher()
@@ -171,7 +171,7 @@ extension AFDataTransferServiceCombine {
                         AFError.responseSerializationFailed(reason: _):
                         adaptedError = .resolvedNetworkFailure(error)
                     default:
-                        adaptedError = .networkFailure(.unknown)
+                        adaptedError = .networkFailure(.connectionError(underlying: error))
                     }
                     
                     progressSubject.send(completion: .failure(adaptedError))

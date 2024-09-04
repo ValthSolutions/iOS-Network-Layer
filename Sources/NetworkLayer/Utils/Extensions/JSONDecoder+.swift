@@ -1,5 +1,5 @@
 import Foundation
-import NetworkInterface
+import INetwork
 
 extension JSONDecoder: ResponseDecoder {
     public func decode<T: Decodable>(_ data: Data) throws -> T {

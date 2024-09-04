@@ -1,8 +1,8 @@
 import Foundation
-import NetworkInterface
+import INetwork
 import Alamofire
 
-open class Endpoint<R>: ResponseRequestable {
+public final class Endpoint<R>: ResponseRequestable {
     public typealias Response = R
     
     public var path: String

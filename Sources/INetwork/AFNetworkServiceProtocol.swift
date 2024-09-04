@@ -10,7 +10,7 @@ import Foundation
 import Alamofire
 import Combine
 
-public protocol AFNetworkServiceCombineProtocol {
+public protocol AFNetworkServiceCombineProtocol: AnyObject {
     func request(endpoint: Requestable) -> AnyPublisher<Data, Error>
     func download(endpoint: Requestable) -> AnyPublisher<Data, Error>
     func upload(endpoint: Requestable, _ data: Data) -> AnyPublisher<(Progress, Data?), Error>
@@ -18,7 +18,7 @@ public protocol AFNetworkServiceCombineProtocol {
                      multipartFormData: @escaping (MultipartFormData) -> Void) -> AnyPublisher<(Progress, Data?), Error>
 }
 
-public protocol AFNetworkServiceProtocol {
+public protocol AFNetworkServiceProtocol: AnyObject {
     var encoder: JSONEncoder { get }
     func streamRequest(endpoint: Requestable) async throws -> DataStreamRequest
     func request(endpoint: Requestable) async throws -> Data

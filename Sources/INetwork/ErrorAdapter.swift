@@ -7,6 +7,6 @@
 
 import Foundation
 
-public protocol IErrorAdapter {
+public protocol IErrorAdapter: AnyObject {
     func adapt(_ error: Error) -> Error
 }

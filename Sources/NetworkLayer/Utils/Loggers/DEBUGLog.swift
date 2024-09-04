@@ -1,6 +1,6 @@
 import Alamofire
 import Foundation
-import NetworkInterface
+import INetwork
 
 public struct DEBUGLog: Loger {
     

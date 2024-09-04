@@ -7,7 +7,7 @@
 
 import Foundation
 import OSLog
-import NetworkInterface
+import INetwork
 
 open class DataTransferService {
     func decode<T: Decodable>(data: Data, decoder: ResponseDecoder) throws -> T {

@@ -7,7 +7,7 @@
 
 import Foundation
 import Alamofire
-import NetworkInterface
+import INetwork
 
 open class AFDataTransferService: DataTransferService, AFDataTransferServiceProtocol {
     
