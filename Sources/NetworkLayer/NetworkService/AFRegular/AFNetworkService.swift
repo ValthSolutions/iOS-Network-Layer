@@ -1,6 +1,6 @@
 import Alamofire
 import Foundation
-import NetworkInterface
+import INetwork
 
 open class AFNetworkService: AFReachableNetworkService, AFNetworkServiceProtocol {
     
@@ -10,7 +10,7 @@ open class AFNetworkService: AFReachableNetworkService, AFNetworkServiceProtocol
     private let fetchConfiguration: () -> NetworkConfigurable
     
     public init(session: Session,
-                logLevel: LogLevel = .debug,
+                logLevel: LogLevel = .release,
                 encoder: JSONEncoder,
                 fetchConfiguration: @escaping () -> NetworkConfigurable) {
         self.session = session
@@ -45,24 +45,11 @@ open class AFNetworkService: AFReachableNetworkService, AFNetworkServiceProtocol
         guard isInternetAvailable() else {
             throw NetworkError.notConnectedToInternet
         }
+        
         let urlRequest = try endpoint.asURLRequest(config: fetchConfiguration(), encoder: encoder)
         let response = session.request(urlRequest).validate().serializingData()
         await logger.log(response.response, endpoint)
-        
-        switch await response.result {
-        case .success(let data):
-            return data
-        case .failure(let error):
-            if error.isExplicitlyCancelledError {
-                throw NetworkError.cancelled
-            } else if error.isSessionTaskError || error.isResponseValidationError {
-                throw NetworkError.generic(error)
-            } else {
-                let statusCode = await response.response.response?.statusCode ?? -1
-                let data = try await response.value
-                throw NetworkError.error(statusCode: statusCode, data: data)
-            }
-        }
+        return try await handleResponse(response)
     }
     
     open func download(endpoint: Requestable) async throws -> Data {
@@ -114,25 +101,23 @@ open class AFNetworkService: AFReachableNetworkService, AFNetworkServiceProtocol
         }
     }
     
-    open func upload(multipartFormData: @escaping (MultipartFormData) -> Void,
-                     to url: URL) async throws -> Progress {
+    open func upload(multipartFormData: @escaping (MultipartFormData) -> Void, to url: URL) async throws -> Data? {
         guard isInternetAvailable() else {
             throw NetworkError.notConnectedToInternet
         }
-        return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Progress, Error>) in
-            self.session.upload(multipartFormData: multipartFormData, to: url).uploadProgress(closure: { progress in
-                continuation.resume(returning: progress)
-            }).response { response in
+        
+        return try await withCheckedThrowingContinuation { continuation in
+            self.session.upload(multipartFormData: multipartFormData, to: url).response { [weak self] response in
+                self?.logger.log(response, nil)
                 switch response.result {
-                case .success(_):
-                    break
+                case .success(let data):
+                    continuation.resume(returning: data)
                 case .failure(let error):
-                    switch true {
-                    case error.isExplicitlyCancelledError:
+                    if error.isExplicitlyCancelledError {
                         continuation.resume(throwing: NetworkError.cancelled)
-                    case error.isSessionTaskError || error.isResponseValidationError:
+                    } else if error.isSessionTaskError || error.isResponseValidationError {
                         continuation.resume(throwing: NetworkError.generic(error))
-                    default:
+                    } else {
                         let statusCode = response.response?.statusCode ?? -1
                         let data = response.data ?? Data()
                         continuation.resume(throwing: NetworkError.error(statusCode: statusCode, data: data))
@@ -140,5 +125,37 @@ open class AFNetworkService: AFReachableNetworkService, AFNetworkServiceProtocol
                 }
             }
         }
+    }
+}
+
+extension AFNetworkService {
+    
+    private func handleResponse(_ task: DataTask<Data>) async throws -> Data {
+        
+        switch await task.result {
+        case .success(let data):
+            return data
+        case .failure(let error):
+            throw await handleAFError(error, response: task.response.response)
+        }
+    }
+    
+    private func handleAFError(_ error: AFError, response: HTTPURLResponse?) -> NetworkError {
+        let networkError: NetworkError
+        if error.isExplicitlyCancelledError {
+            networkError = .cancelled
+        } else if error.isRequestRetryError {
+            networkError = .retryError(underlying: error, statusCode: response?.statusCode)
+        } else if error.isSessionTaskError {
+            networkError = .connectionError(underlying: error)
+        } else if error.isResponseValidationError, let statusCode = response?.statusCode {
+            networkError = .unacceptableStatusCode(statusCode: statusCode)
+        } else if let statusCode = response?.statusCode {
+            networkError = .error(statusCode: statusCode, data: nil)
+        } else {
+            networkError = .generic(error)
+        }
+        logger.failure(error)
+        return networkError
     }
 }

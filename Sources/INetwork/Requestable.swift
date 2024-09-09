@@ -1,7 +1,7 @@
 import Foundation
 import Alamofire
 
-public protocol Requestable {
+public protocol Requestable: AnyObject {
     var path: String { get }
     var isFullPath: Bool { get }
     var method: HTTPMethodType { get }

@@ -6,7 +6,8 @@
 //
 
 import Foundation
-import NetworkInterface
+import INetwork
+
 
 open class JSONEncoderData: DataEncoder {
     
