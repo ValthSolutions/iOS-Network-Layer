@@ -51,7 +51,7 @@ public enum NetworkError: Error {
     case cancelled
     case generic(Error)
     case urlGeneration
-    case retryError(underlying: Error)
+    case retryError(underlying: Error, statusCode: Int?)
     case connectionError(underlying: Error)
     case decoding(error: Error)
     case noData
@@ -120,7 +120,7 @@ extension NetworkError: LocalizedError {
             return "Decoding error: \(error.localizedDescription)"
         case .noData:
             return "No data received"
-        case .retryError(let error):
+        case .retryError(let error, _):
             return "Retry error: \(error.localizedDescription)"
         }
     }

@@ -145,7 +145,7 @@ extension AFNetworkService {
         if error.isExplicitlyCancelledError {
             networkError = .cancelled
         } else if error.isRequestRetryError {
-            networkError = .retryError(underlying: error)
+            networkError = .retryError(underlying: error, statusCode: response?.statusCode)
         } else if error.isSessionTaskError {
             networkError = .connectionError(underlying: error)
         } else if error.isResponseValidationError, let statusCode = response?.statusCode {

@@ -62,8 +62,8 @@ open class AFDataTransferService: DataTransferService, AFDataTransferServiceProt
         do {
             let decodedData: T = try decode(data: responseData, decoder: decoder)
             return decodedData
-        } catch let error {
-            throw DataTransferError.parsing(error)
+        } catch {
+            throw error
         }
     }
     
