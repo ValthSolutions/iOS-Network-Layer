@@ -4,21 +4,15 @@
 import PackageDescription
 
 let package = Package(
-    name: "Network-Layer",
+    name: "NetworkLayer",
     platforms: [
         .iOS(.v14)
     ],
     
     products: [
         .library(
-            name: "NetworkInterface",
-            targets: ["NetworkInterface"]),
-        .library(
-            name: "Networking",
-            targets: ["Networking"]),
-        .library(
-            name: "SampleApp",
-            targets: ["SampleApp"]),
+            name: "NetworkLayer",
+            targets: ["NetworkLayer"])
     ],
     
     dependencies: [ 
@@ -27,19 +21,14 @@ let package = Package(
     
     targets: [
         .target(
-            name: "SampleApp",
-            dependencies: [
-            "NetworkInterface", "Networking"
-            ]),
-        .target(
-            name: "NetworkInterface",
+            name: "INetwork",
             dependencies: [
                 .product(name: "Alamofire", package: "Alamofire"),
             ]),
         .target(
-            name: "Networking",
+            name: "NetworkLayer",
             dependencies: [
-                "NetworkInterface",
+                "INetwork",
                 .product(name: "Alamofire", package: "Alamofire"),
             ]
         ),

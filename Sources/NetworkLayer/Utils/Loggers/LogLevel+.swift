@@ -1,4 +1,4 @@
-import NetworkInterface
+import INetwork
 
 extension LogLevel {
     public var logger: Loger {

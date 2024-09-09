@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import NetworkInterface
+import INetwork
 
 open class JSONResponseDecoder: ResponseDecoder {
     
