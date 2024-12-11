@@ -71,6 +71,9 @@ extension Requestable {
         
         guard var urlComponents = URLComponents(string: endpoint) else { throw RequestGenerationError.components }
         var urlQueryItems = [URLQueryItem]()
+        if isFullPath {
+            urlQueryItems.append(contentsOf: urlComponents.queryItems ?? [])
+        }
         
         let queryParameters = try queryParametersEncodable?.toDictionary(encoder: encoder) ?? self.queryParameters
         
