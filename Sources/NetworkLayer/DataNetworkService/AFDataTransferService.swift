@@ -77,6 +77,10 @@ open class AFDataTransferService: DataTransferService, AFDataTransferServiceProt
         }
     }
     
+    open func downloadRawData<E: ResponseRequestable>(_ endpoint: E) async throws -> Data {
+        return try await networkService.download(endpoint: endpoint)
+    }
+    
     open func upload(_ value: String, url: URL) async throws -> Progress {
         let encodedData = try encode(value, encoder: JSONEncoderData())
         do {
