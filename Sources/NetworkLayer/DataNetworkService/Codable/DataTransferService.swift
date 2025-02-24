@@ -16,7 +16,7 @@ open class DataTransferService {
             return result
         } catch {
             let typeName = String(describing: T.self)
-            let dataSnippet = String(data: data.prefix(100), encoding: .utf8) ?? "Data not representable in UTF-8"
+            let dataSnippet = String(data: data, encoding: .utf8) ?? "Data not representable in UTF-8"
             os_log("Failed to decode type: %@, \nError: %@, \nData snippet: %@", typeName, error.localizedDescription, dataSnippet)
             throw DataTransferError.parsing(error)
         }
